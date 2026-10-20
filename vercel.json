@@ -14,7 +14,7 @@
   "rewrites": [
     {
       "source": "/inventory",
-      "destination": "/index.html"
+      "destination": "/inventory.html"
     },
     {
       "source": "/dungeon",
