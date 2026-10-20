@@ -1,24 +1,14 @@
 {
   "cleanUrls": true,
+  "trailingSlash": false,
   "headers": [
     {
       "source": "/api/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store"
-        }
-      ]
+      "headers": [{"key": "Cache-Control", "value": "no-store"}]
     }
   ],
   "rewrites": [
-    {
-      "source": "/inventory",
-      "destination": "/inventory.html"
-    },
-    {
-      "source": "/dungeon",
-      "destination": "/index.html"
-    }
+    {"source": "/dungeon", "destination": "/dungeon.html"},
+    {"source": "/inventory", "destination": "/inventory.html"}
   ]
 }
