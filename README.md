@@ -35,3 +35,6 @@ Browsers expose WebGL2 and increasingly WebGPU; a website cannot reliably force 
 - Touch joystick moves the character model; keyboard movement supports WASD/arrows; combat buttons trigger distinct synthesized sound cues and visual effects.
 - Device orientation permission is optional and browser-dependent. Landscape orientation lock is attempted after user interaction and may be refused by the browser.
 - The floor file preserves the companion's ten floor definitions; balance, hitbox timing and enemy AI require playtesting on actual devices.
+
+## Adventure mode prototype
+Run `npm install` and `npm run dev`, then open `/adventure`. This route provides a separate procedural 3D free-roam scene with WASD/arrow-key movement, touch buttons, NPC/enemy visual placeholders, weather/season presets, and a local checkpoint interaction. `/dungeon?floor=1` remains the ten-floor dungeon combat route. This build is a feature prototype; it does not yet include server-authoritative multiplayer, live WhatsApp bot synchronization, streamed world chunks, or full real-time enemy AI.
