@@ -1,0 +1,6 @@
+{
+  "name": "Aetheria RPG Sprite Atlas",
+  "file": "/assets/aetheria-sprite-atlas.png",
+  "layout": "4x4 concept atlas",
+  "notes": "Concept art atlas for adventurer poses, ember creature poses, and terrain tiles. Cells require trimming/slicing before use as frame-by-frame animation; current 3D models remain procedural."
+}

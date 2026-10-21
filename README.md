@@ -54,3 +54,8 @@ Run `npm install` and `npm run dev`, then open `/adventure`. This route provides
 - `gacha daily` — claim 40 gems once per 24 hours.
 - `gacha history` / `gacha collection` — review pulls and collected spirits.
 - Rates: SSR 3%, SR 17%, R 80%, hard pity at 50 pulls. Duplicate spirits convert to shards. Run `npm test` in the bot project to test the gacha engine.
+
+## 3D mobile control overhaul
+The Adventure scene remains a Three.js 3D world (not a 2D sprite-sheet game). It now uses a smoothed third-person follow camera, camera-relative virtual-joystick movement, and a right-side drag-to-look touch zone. No accelerometer or gyroscope event handlers are used. The notification card can be closed with × or dismissed with a vertical swipe. The existing sprite atlas is concept/reference art only; it is not used as the 3D player or enemy model. Terrain and characters remain procedural 3D toon-shaded placeholders until production GLB assets are supplied.
+
+On mobile browsers, fullscreen and landscape locking are best-effort browser APIs. A website cannot universally hide Android system bars, and orientation lock generally requires a user gesture and fullscreen support.

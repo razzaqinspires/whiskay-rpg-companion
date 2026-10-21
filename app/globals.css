@@ -20,3 +20,31 @@
 .inventory-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;padding:16px;border:1px solid #d6b66a44;border-radius:16px;background:linear-gradient(135deg,#11131bd9,#070a12d9);backdrop-filter:blur(18px);box-shadow:inset 0 1px #ffffff0b,0 18px 48px #0005}.inventory-slot{position:relative;min-width:0;border:1px solid #d6b66a30;background:linear-gradient(145deg,#171b28d9,#090c15e8);backdrop-filter:blur(12px);transition:transform .18s,border-color .18s,box-shadow .18s}.inventory-slot:hover{transform:translateY(-3px);border-color:#f1d58b;box-shadow:0 10px 30px #d8a83b20}.inventory-slot[data-tooltip]:hover:after,.inventory-slot[data-tooltip]:focus-within:after{content:attr(data-tooltip);position:absolute;z-index:30;left:50%;bottom:calc(100% + 8px);transform:translateX(-50%);width:min(240px,75vw);padding:11px 12px;border:1px solid #e2c47d99;border-radius:9px;background:#090c14f5;color:#f4e5b7;box-shadow:0 12px 35px #000a;backdrop-filter:blur(14px);font:11px/1.6 'DM Sans',sans-serif;white-space:normal;pointer-events:none}.empty-slot{min-height:145px;display:grid;place-items:center;border-style:dashed;border-color:#a3adbd20;background:#0a0d1680;color:#65718a;font:10px 'DM Sans',sans-serif}.rarity-legend{color:#d7c18a}.rarity-epic .rarity{color:#c6a3ff}.rarity-rare .rarity{color:#83dfff}.rarity-uncommon .rarity{color:#8be7b7}@media(max-width:760px){.inventory-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;padding:8px}.inventory-slot{padding:8px!important}.inventory-slot .item-illustration{min-height:58px!important}.inventory-slot .item-copy h3{font-size:12px!important}.inventory-slot .item-copy p{font-size:10px!important}.inventory-slot .item-copy button{font-size:9px!important;padding:7px 5px!important}.empty-slot{min-height:112px}}@media(max-width:390px){.inventory-grid{gap:5px;padding:6px}.inventory-slot .item-copy h3{font-size:10px!important}.inventory-slot .item-copy .rarity{font-size:7px!important}.inventory-slot .item-copy button{display:none}}
 
 .gacha-banner{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px 24px;margin:0 0 18px;padding:20px;border:1px solid #d9b96b55;border-radius:14px;background:radial-gradient(ellipse at 85% 0%,#82612a30,transparent 48%),linear-gradient(130deg,#181722e8,#080b14ed);backdrop-filter:blur(18px)}.gacha-banner small{color:#d6bb7c;font-size:9px;letter-spacing:.2em}.gacha-banner h2{font-family:Georgia,serif;font-weight:500;font-size:clamp(19px,3vw,27px);color:#f5e3b2;margin:8px 0}.gacha-banner p{font-size:11px;line-height:1.65;color:#9caac0;margin:0}.gacha-status{display:flex;flex-direction:column;gap:6px;align-items:flex-end;justify-content:center;color:#f5d991;font-size:12px}.gacha-status span,.gacha-status small{color:#9caac0;font-size:10px}.gacha-note{grid-column:1/-1;padding-top:12px!important;border-top:1px solid #d6b66a25}.gacha-note code{color:#f5d991}@media(max-width:520px){.gacha-banner{grid-template-columns:1fr}.gacha-status{align-items:flex-start}}
+
+/* Mobile landscape: reserve the full viewport for gameplay and keep touch targets above HUD. */
+@media (orientation:landscape) and (max-height:560px) {
+  html,body { overflow:hidden; }
+  .game-shell.arena-page { width:100%;height:100dvh;min-height:100dvh;padding:0 8px;overflow:auto; }
+  .game-top { height:36px;min-height:36px; }
+  .game-tabs { padding:2px 0;height:30px; }
+  .game-tabs a,.game-tabs button { padding:5px 9px;font-size:9px; }
+  .arena-heading { padding:7px 0 6px; }
+  .arena-heading h1 { font-size:25px;margin:3px 0; }
+  .arena-heading p { display:none; }
+  .battle-layout { grid-template-columns:minmax(0,1fr) minmax(220px,32vw);gap:8px; }
+  .scene-canvas { height:calc(100dvh - 100px);min-height:240px;touch-action:none; }
+  .scene-wrap,.battle-side,.battle-panel { min-width:0; }
+  .enemy-label { top:8px;left:8px;transform:none;width:min(260px,48%); }
+  .player-hud { bottom:8px;left:8px; }
+  .floor-drawer { max-height:65dvh;overflow:auto;z-index:80; }
+}
+@media (orientation:portrait) and (max-width:900px) {
+  .arena-page { visibility:hidden!important;pointer-events:none!important; }
+}
+
+/* Mobile 3D game viewport: no device-sensor camera input; touch zones own camera gestures. */
+html, body { overscroll-behavior: none; }
+.aetheria-root { width:100vw; height:100dvh; min-height:100dvh; padding:0; }
+.aetheria-root canvas { display:block; width:100% !important; height:100% !important; touch-action:none; }
+@media (orientation:landscape) and (max-height:600px) { .aetheria-root { gap:0; } }
+@media (orientation:portrait) and (max-width:900px) { .aetheria-root .aetheria-scene { visibility:hidden; pointer-events:none; } }

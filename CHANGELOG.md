@@ -34,3 +34,12 @@ This release improves the existing playable prototypes. Full server-authoritativ
 - Updated inventory to a 4×5 glassmorphism grid with item detail tooltips and Gacha currency/pity summary.
 - Added bot Gacha banner, SSR/SR/R rarity pool, hard pity, single/ten pulls, duplicate shards, daily gem claim, collection/history commands, and Node built-in tests.
 - Verification: web JS/JSX syntax and route-uniqueness checks pass; bot Gacha tests and JavaScript syntax checks pass. Production Next.js build could not be run in this environment because npm registry access failed with `EAI_AGAIN`; run `npm run build` in Vercel or a network-enabled environment to verify the complete dependency build.
+
+
+## 3D mobile controls overhaul (2026-10-21)
+- Added a smoothed third-person follow camera and right-side drag-to-look zone for 360-degree camera yaw.
+- Analog movement is camera-relative with a 0.3 deadzone; no accelerometer/gyroscope APIs are used.
+- Added dismissible, swipe-to-dismiss field notifications and adjusted overlay stacking for mobile touch controls.
+- Fullscreen CSS hides non-game sections while the world canvas occupies the viewport.
+- Kept 3D procedural world geometry, toon-shaded placeholder characters/monsters, and Rapier character controller.
+- Device OS status/navigation bars cannot be hidden by a web page in every browser; fullscreen/orientation lock are best-effort browser APIs.
