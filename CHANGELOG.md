@@ -53,3 +53,12 @@ This release improves the existing playable prototypes. Full server-authoritativ
 - Moved Adventure notifications to the top-center and made the right camera-look zone non-scrolling.
 - In mobile combat landscape, hides the large side panels, compacts player/enemy status, shrinks minimap, and anchors joystick/actions to bottom corners. Fullscreen combat hides page navigation and uses the whole viewport.
 - Build verification remains pending because dependency installation timed out in this environment.
+
+## 2026-10-21 — Mobile performance and animation pass
+- Reduced procedural world foliage from 100 grass meshes / 58 trees to 30 grass meshes / 32 trees and memoized the static geometry elements.
+- Disabled real-time shadow maps in mobile scenes, capped render pixel ratio, disabled MSAA on the mobile path, reduced star/particle counts, and removed the expensive dungeon contact-shadow pass.
+- Removed the Adventure scene's per-position world-group translation, which duplicated motion and forced a large group transform every time player position changed.
+- Added procedural walk-cycle animation for the Adventure hero's legs and arms, cape sway, directional facing, and idle-to-walk blending.
+- Added leg gait animation for the wolf and distinct procedural Ember Slime and Crystal Stag enemy silhouettes/idle motion.
+- Added a corresponding articulated walk cycle to the Dungeon hero and reduced arena particle/light cost.
+- Validation: route verification and TypeScript JSX transpile parsing pass. A full Next.js production build could not be run because dependency installation timed out in this environment.

@@ -63,3 +63,9 @@ On mobile browsers, fullscreen and landscape locking are best-effort browser API
 
 ### Mobile stability notes
 The 3D Adventure loading overlay has a bounded 9-second fallback for WebViews where `useProgress()` remains at zero. The overlay does not imply every remote asset succeeded: missing assets should use procedural scene content, and errors are reported in the loading label. Mobile HUD positions respect CSS safe-area insets. In landscape combat mode, large side panels are hidden to preserve the viewport; player and enemy status remain compact. Browser fullscreen/orientation locking still depends on platform support.
+
+### Mobile performance profile
+The 3D scenes use capped device-pixel-ratio settings, disabled realtime shadow maps, and reduced foliage/particle counts to improve frame pacing on mid-range Android devices. The graphics selector provides Low, Medium, and High profiles; if frame pacing is still uneven, start with Low and disable the Rain weather effect. The hero uses procedural joint pivots for an idle/walk cycle; Adventure includes separate Wolf, Ember Slime, and Crystal Stag procedural models with different idle motion. These are lightweight placeholder models, not imported production-grade animated GLB rigs.
+
+### Verification note
+The updated route verifier and JSX transpile parsing passed. A full `next build` was not verified in this environment because `npm install` timed out while accessing the package registry. Test the production build and frame pacing on the target Android/WebView device before replacing the live deployment.
