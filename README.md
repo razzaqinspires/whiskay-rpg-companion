@@ -1,14 +1,37 @@
-# Whiskay RPG Companion — Vercel
+# Whiskay RPG — Next.js 3D Arena Scaffold
 
-## Deploy
-1. Import folder `vercel-rpg` as a separate Vercel project (or deploy this folder as project root).
-2. Add `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `BOT_SYNC_TOKEN` in Vercel Environment Variables. Never expose service role key to browser.
-3. Run `schema.sql` in Supabase SQL editor.
-4. Deploy. `/api/floors` serves the 10-floor content, `/api/player?player=<playerId>` reads a snapshot, and `POST /api/sync` writes a snapshot using `Authorization: Bearer BOT_SYNC_TOKEN`.
+A browser-first anime-inspired RPG prototype with explicit `/dungeon` and `/inventory` routes, 10 floor records, responsive HUD, procedural cel/toon-shaded character/enemy, touch joystick, keyboard controls, sound cues, portrait rotation gate, optional device-orientation permission, and local browser save.
 
-## Bot sync payload
-`POST https://YOUR-VERCEL-DOMAIN/api/sync`
-```json
-{"playerId":"chatJid|senderJid","payload":{"name":"Player","level":12,"xp":400,"nextXp":700,"hp":240,"maxHp":260,"gold":1500,"weapon":"Stormglass Blade","weaponPower":42,"potions":3,"wins":22,"losses":4,"inventory":[{"name":"Potion of Renewal","quantity":3}]}}
+## Tech stack
+- Next.js 14 / React 18
+- Three.js + React Three Fiber + Drei
+- `@react-three/rapier` for scene physics/colliders
+- Zustand for player state
+- Web Audio API for per-action SFX
+
+## Run locally
+```bash
+npm install
+npm run dev
 ```
-Do not sync phone numbers or private WhatsApp message contents. Use a stable opaque player ID or a one-time dashboard token for each player. The included UI has a playable client-side combat prototype; it is not a server-authoritative multiplayer game yet. Replace the demo combat state with signed, authenticated turn actions before production.
+Open `http://localhost:3000`, then `/dungeon?floor=1&player=<opaque-player-token>` or `/inventory?player=<opaque-player-token>`.
+
+## Deploy to Vercel
+Import this folder as the project root and use the default Next.js build settings. Do not deploy only the contents of `public` or the old static prototype. Every route is an App Router route, so `/dungeon` and `/inventory` are explicit pages rather than rewrites to missing files.
+
+## Bot commands / integration
+The website supports the same `/dungeon?floor=N&player=...` link pattern as the companion bot. The `player` query is presently a routing token only; client progress saves in localStorage and is not trusted server-side. For true bot-to-web sync, add an authenticated API using Supabase and a stable opaque player ID. Never expose `SUPABASE_SERVICE_ROLE_KEY` or `BOT_SYNC_TOKEN` to client-side code.
+
+## Assets: seed, template, spirit sheet
+- `lib/floors.json` is the existing 10-floor dungeon content source, retained from the current companion.
+- `public/assets/whiskay-rpg-concept.png` is a visual concept reference, not a runtime sprite atlas.
+- Characters are currently generated procedurally from toon-shaded Three.js meshes; no external rigged GLB character asset is bundled. For production anime animation, replace `HeroModel`/`EnemyModel` with rigged `.glb` files and clips from Blender/Mixamo, and add actual sprite/texture atlases in `public/assets`.
+
+## Graphics / Vulkan note
+Browsers expose WebGL2 and increasingly WebGPU; a website cannot reliably force the native Vulkan backend. Chromium may use Vulkan internally on supported Android/GPU configurations, but this is browser-controlled. The current renderer requests high-performance WebGL and uses adaptive DPR; it does not claim native Vulkan rendering. WebGPU renderer migration should be a separate tested capability-detection task.
+
+## Current scope and limitations
+- Single-player client-side combat prototype, not server-authoritative multiplayer.
+- Touch joystick moves the character model; keyboard movement supports WASD/arrows; combat buttons trigger distinct synthesized sound cues and visual effects.
+- Device orientation permission is optional and browser-dependent. Landscape orientation lock is attempted after user interaction and may be refused by the browser.
+- The floor file preserves the companion's ten floor definitions; balance, hitbox timing and enemy AI require playtesting on actual devices.

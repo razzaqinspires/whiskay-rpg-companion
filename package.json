@@ -1,0 +1,17 @@
+{
+  "name": "whiskay-rpg-companion",
+  "version": "2.0.0",
+  "private": true,
+  "scripts": {"dev":"next dev","build":"next build","start":"next start","lint":"next lint"},
+  "dependencies": {
+    "@react-three/drei":"^9.122.0",
+    "@react-three/fiber":"^8.17.10",
+    "@react-three/rapier":"^1.5.0",
+    "next":"^14.2.25",
+    "react":"^18.3.1",
+    "react-dom":"^18.3.1",
+    "three":"^0.172.0",
+    "zustand":"^5.0.3"
+  },
+  "devDependencies": {"eslint":"^8.57.1","eslint-config-next":"^14.2.25"}
+}

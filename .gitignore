@@ -1,16 +1,6 @@
-# Environment variables
-.env
-.env.local
-.env.*.local
-
-# Dependencies
-node_modules/
-
-# Vercel & Build outputs
-.vercel/
-dist/
-build/
-
-# Logs & System
-*.log
-.DS_Store
+node_modules
+.next
+out
+.env*
+!.env.example
+.vercel
