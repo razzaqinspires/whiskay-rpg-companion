@@ -43,3 +43,13 @@ This release improves the existing playable prototypes. Full server-authoritativ
 - Fullscreen CSS hides non-game sections while the world canvas occupies the viewport.
 - Kept 3D procedural world geometry, toon-shaded placeholder characters/monsters, and Rapier character controller.
 - Device OS status/navigation bars cannot be hidden by a web page in every browser; fullscreen/orientation lock are best-effort browser APIs.
+
+
+## Mobile runtime stability patch (2026-10-21)
+- Added a 9-second fail-open timeout to the Drei progress overlay so WebViews that never emit loader progress cannot remain blocked at 0%. Asset errors are shown as fallback status.
+- Raised the loading overlay above gameplay controls and orientation guard above loading.
+- Applied safe-area-aware offsets to virtual joystick, skill dock, minimap, player HUD and notices.
+- Increased joystick and skill dock sorting order so HUD panels cannot cover the touch targets.
+- Moved Adventure notifications to the top-center and made the right camera-look zone non-scrolling.
+- In mobile combat landscape, hides the large side panels, compacts player/enemy status, shrinks minimap, and anchors joystick/actions to bottom corners. Fullscreen combat hides page navigation and uses the whole viewport.
+- Build verification remains pending because dependency installation timed out in this environment.

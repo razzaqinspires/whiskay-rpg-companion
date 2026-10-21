@@ -59,3 +59,7 @@ Run `npm install` and `npm run dev`, then open `/adventure`. This route provides
 The Adventure scene remains a Three.js 3D world (not a 2D sprite-sheet game). It now uses a smoothed third-person follow camera, camera-relative virtual-joystick movement, and a right-side drag-to-look touch zone. No accelerometer or gyroscope event handlers are used. The notification card can be closed with × or dismissed with a vertical swipe. The existing sprite atlas is concept/reference art only; it is not used as the 3D player or enemy model. Terrain and characters remain procedural 3D toon-shaded placeholders until production GLB assets are supplied.
 
 On mobile browsers, fullscreen and landscape locking are best-effort browser APIs. A website cannot universally hide Android system bars, and orientation lock generally requires a user gesture and fullscreen support.
+
+
+### Mobile stability notes
+The 3D Adventure loading overlay has a bounded 9-second fallback for WebViews where `useProgress()` remains at zero. The overlay does not imply every remote asset succeeded: missing assets should use procedural scene content, and errors are reported in the loading label. Mobile HUD positions respect CSS safe-area insets. In landscape combat mode, large side panels are hidden to preserve the viewport; player and enemy status remain compact. Browser fullscreen/orientation locking still depends on platform support.

@@ -48,3 +48,38 @@ html, body { overscroll-behavior: none; }
 .aetheria-root canvas { display:block; width:100% !important; height:100% !important; touch-action:none; }
 @media (orientation:landscape) and (max-height:600px) { .aetheria-root { gap:0; } }
 @media (orientation:portrait) and (max-width:900px) { .aetheria-root .aetheria-scene { visibility:hidden; pointer-events:none; } }
+
+
+/* Critical mobile combat HUD: safe-area anchors, compact status and stable touch sorting. */
+@media (max-width: 900px) {
+  .arena-page { padding-left:max(6px,env(safe-area-inset-left)); padding-right:max(6px,env(safe-area-inset-right)); }
+  .arena-page .scene-canvas { height: min(72dvh, 560px); min-height: 320px; }
+  .arena-page .scene-topline { display:none; }
+  .arena-page .player-hud { top:max(8px,env(safe-area-inset-top)); bottom:auto; left:max(8px,env(safe-area-inset-left)); width:clamp(138px,27vw,190px); padding:6px; gap:6px; z-index:20; opacity:.94; }
+  .arena-page .player-hud .avatar { width:28px;height:28px;font-size:13px; }
+  .arena-page .player-bars .xp-line, .arena-page .player-bars small:last-child { display:none; }
+  .arena-page .enemy-label { top:max(8px,env(safe-area-inset-top)); left:50%; width:min(210px,34vw); padding:6px 8px; z-index:18; }
+  .arena-page .enemy-label>div:first-child small { display:none; }
+  .arena-page .enemy-label b { font-size:10px; }
+  .arena-page .enemy-label strong { margin:2px 0; font-size:13px; }
+  .arena-page .mini-map { top:58px; right:max(8px,env(safe-area-inset-right)); width:72px;height:72px; z-index:10; opacity:.82; }
+  .arena-page .combo-badge { display:none; }
+  .arena-page .mobile-joystick { display:flex; left:max(12px,env(safe-area-inset-left)); bottom:max(12px,env(safe-area-inset-bottom)); z-index:90; }
+  .arena-page .scene-action-pad { right:max(12px,env(safe-area-inset-right)); bottom:max(12px,env(safe-area-inset-bottom)); z-index:91; }
+  .arena-page .battle-side { display:none; }
+  .arena-page .scene-bottomline { display:none; }
+}
+@media (orientation:landscape) and (max-height:600px) {
+  .arena-page { width:100vw; height:100dvh; min-height:100dvh; overflow:hidden; padding:0; }
+  .arena-page .game-top,.arena-page .game-tabs,.arena-page .arena-heading,.arena-page .arena-footer { display:none!important; }
+  .arena-page .battle-layout { display:block; height:100dvh; }
+  .arena-page .scene-wrap { height:100dvh; border:0; border-radius:0; }
+  .arena-page .scene-canvas { height:100dvh!important; min-height:0!important; }
+  .arena-page .scene-topline,.arena-page .scene-bottomline { display:none!important; }
+  .arena-page .player-hud { top:max(8px,env(safe-area-inset-top)); bottom:auto; width:clamp(138px,24vw,185px); }
+  .arena-page .enemy-label { top:max(8px,env(safe-area-inset-top)); width:min(200px,30vw); }
+  .arena-page .mini-map { top:56px; width:64px;height:64px; }
+  .arena-page .mobile-joystick { left:max(14px,env(safe-area-inset-left)); bottom:max(14px,env(safe-area-inset-bottom)); }
+  .arena-page .scene-action-pad { right:max(14px,env(safe-area-inset-right)); bottom:max(14px,env(safe-area-inset-bottom)); }
+}
+@media (orientation:portrait) and (max-width:900px) { .arena-page { display:none!important; } }
