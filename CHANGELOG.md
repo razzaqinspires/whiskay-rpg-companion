@@ -62,3 +62,17 @@ This release improves the existing playable prototypes. Full server-authoritativ
 - Added leg gait animation for the wolf and distinct procedural Ember Slime and Crystal Stag enemy silhouettes/idle motion.
 - Added a corresponding articulated walk cycle to the Dungeon hero and reduced arena particle/light cost.
 - Validation: route verification and TypeScript JSX transpile parsing pass. A full Next.js production build could not be run because dependency installation timed out in this environment.
+
+## 2026-10-21 — Rigged animation, LOD, preload and FPS overlay
+- Added an optional GLB rig/animation controller using Three.js AnimationMixer through React Three Drei `useAnimations`, with cross-faded idle, walk, run, jump, attack, dodge and hit clip selection.
+- Kept the existing procedural character as a graceful fallback when no GLB URL is configured or a model fails to load.
+- Added optional hero/monster GLB preload configuration using `NEXT_PUBLIC_HERO_GLB_URL` and `NEXT_PUBLIC_MONSTER_GLB_URL`.
+- Added a low-overhead real-time FPS overlay to Adventure and Dungeon scenes, sampled with requestAnimationFrame without React state updates each frame.
+- Added distance-based LOD to procedural trees in Adventure.
+- GLB assets are not bundled; configure optimized GLB files and make sure clip names include the documented animation labels.
+
+## Open World Action Update
+- Added distance-gated wolf aggro/chase and elite wolf movement tuning in Adventure.
+- Added a closeable schematic world map and local quest-board accept panel.
+- Kept existing GLB/preload/FPS, dungeon floor and dynamic API route structure.
+- Verified API route uniqueness with `npm run verify:routes`; production build and Android runtime still require deployment testing.

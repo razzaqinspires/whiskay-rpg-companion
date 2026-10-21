@@ -69,3 +69,14 @@ The 3D scenes use capped device-pixel-ratio settings, disabled realtime shadow m
 
 ### Verification note
 The updated route verifier and JSX transpile parsing passed. A full `next build` was not verified in this environment because `npm install` timed out while accessing the package registry. Test the production build and frame pacing on the target Android/WebView device before replacing the live deployment.
+
+## Rigged GLB models, LOD, and FPS counter
+
+The game can use rigged GLB assets without losing the existing procedural fallback. Configure these public environment variables in Vercel or `.env.local`:
+
+- `NEXT_PUBLIC_HERO_GLB_URL=/assets/models/aetheria-hero.glb`
+- `NEXT_PUBLIC_MONSTER_GLB_URL=/assets/models/aetheria-monster.glb`
+
+Place the matching optimized files in `public/assets/models/` (or use a trusted HTTPS asset URL with appropriate CORS headers). Leave either variable unset to keep its procedural fallback. The GLB controller selects animation clips by case-insensitive names containing `idle`, `walk`, `run`, `jump`, `attack`/`slash`, `dodge`/`roll`, or `hit`/`hurt`. If a clip is absent, it falls back to idle/first available clip. Use a consistent humanoid rig and normalized model scale/orientation for best results. The preload hook warms configured GLBs; it does not bundle or manufacture model files.
+
+A compact FPS meter is shown in the upper-left safe area on Adventure and Dungeon. It measures requestAnimationFrame cadence (a useful display estimate, not a GPU profiler). Adventure's tree models use distance-based LOD. Start with Graphics Quality Low on mobile; test FPS after the device has warmed up.
