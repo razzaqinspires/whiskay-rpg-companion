@@ -38,3 +38,19 @@ Browsers expose WebGL2 and increasingly WebGPU; a website cannot reliably force 
 
 ## Adventure mode prototype
 Run `npm install` and `npm run dev`, then open `/adventure`. This route provides a separate procedural 3D free-roam scene with WASD/arrow-key movement, touch buttons, NPC/enemy visual placeholders, weather/season presets, and a local checkpoint interaction. `/dungeon?floor=1` remains the ten-floor dungeon combat route. This build is a feature prototype; it does not yet include server-authoritative multiplayer, live WhatsApp bot synchronization, streamed world chunks, or full real-time enemy AI.
+
+## Aetheria systems update
+
+- `app/api/*/route.js` is the single owner for API endpoints. Do not recreate a root-level `/api/*.js` directory beside the App Router; Vercel can otherwise emit duplicate functions (`EEXIST`, e.g. `/api/floors`).
+- API handlers explicitly opt into `dynamic = 'force-dynamic'`; `/api/floors` also sets `revalidate = 0`.
+- Adventure now includes a Drei asset progress overlay, portrait-orientation guard, NippleJS analog with a 0.3 force deadzone, draggable/persisted joystick and skill dock positions, adjustable render pixel ratio, Rapier kinematic movement proxy with a 45° slope limit and ground offset, and synthesized optional ambience/SFX controlled by user gesture.
+- Inventory now presents 20 glass-style slots with rarity accents, hover details, and synced gems/pity/shards summary. Gacha pulls are performed through the bot so the existing authenticated server-side sync remains the source of truth.
+- Web route verification: `npm run verify:routes`.
+
+## WhiskayBot Gacha
+
+- `gacha rates` — banner rates and pity status.
+- `gacha summon 1` / `gacha summon 10` — spend 30 / 270 Aether Gems.
+- `gacha daily` — claim 40 gems once per 24 hours.
+- `gacha history` / `gacha collection` — review pulls and collected spirits.
+- Rates: SSR 3%, SR 17%, R 80%, hard pity at 50 pulls. Duplicate spirits convert to shards. Run `npm test` in the bot project to test the gacha engine.

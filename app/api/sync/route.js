@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic';
 export async function POST(request){
   const token=(request.headers.get('authorization')||'').replace(/^Bearer\s+/i,'');
-  if(!process.env.BOT_SYNC_TOKEN||token!==process.env.BOT_SYNC_TOKEN)return Response.json({error:'unauthorized'},{status:401});
+  const expectedToken=process.env.BOT_SYNC_TOKEN||process.env.DUNGEON_SYNC_TOKEN;if(!expectedToken||token!==expectedToken)return Response.json({error:'unauthorized'},{status:401});
   let body;try{body=await request.json()}catch{return Response.json({error:'invalid_json'},{status:400});}
   const {playerId,payload}=body||{};
   if(typeof playerId!=='string'||!playerId.trim()||playerId.length>180||!payload||typeof payload!=='object'||Array.isArray(payload))return Response.json({error:'invalid_payload'},{status:400});

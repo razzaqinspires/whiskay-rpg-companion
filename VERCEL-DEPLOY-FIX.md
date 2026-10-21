@@ -16,3 +16,9 @@ Project ini menggunakan Next.js App Router. File `app/page.jsx` adalah homepage 
 
 ## Environment variables
 File `.env` lokal tidak disertakan dalam ZIP ini untuk mencegah kebocoran secret. Jika integrasi database/bot digunakan, tambahkan `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, dan `BOT_SYNC_TOKEN` melalui Vercel Project Settings → Environment Variables. Jangan gunakan prefix `NEXT_PUBLIC_` untuk secret.
+
+## Fix EEXIST `/api/floors`
+
+Next.js App Router is the sole owner of API routes. The legacy root-level `api/*.js` serverless functions were removed because they duplicated `app/api/*/route.js` endpoints and caused Vercel to attempt to create the same `/api/floors` function twice. Keep `app/api/floors/route.js`, `app/api/player/route.js`, and `app/api/sync/route.js` as the only owners. Each route explicitly uses `dynamic = 'force-dynamic'` (floors also sets `revalidate = 0`) so Vercel does not create a competing static route output.
+
+The sync endpoint accepts `BOT_SYNC_TOKEN` or `DUNGEON_SYNC_TOKEN` for backward compatibility with WhiskayBot. Prefer setting one identical secret on both deployments.

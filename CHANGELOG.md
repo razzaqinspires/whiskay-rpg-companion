@@ -26,3 +26,11 @@
 
 ### Scope note
 This release improves the existing playable prototypes. Full server-authoritative two-way real-time synchronization, persistent shared inventory/equipment across the legacy RPG store and expansion store, chunk-streamed open world, advanced enemy navigation, and production GLB/audio asset packs still require a backend and asset pipeline; they are not represented as completed here.
+
+## 2.2.0 — Aetheria controls, physics, inventory, and Gacha
+- Removed duplicate root-level `/api/*.js` functions; App Router handlers are the only owners of `/api/floors`, `/api/player`, and `/api/sync`, fixing the route-name collision reported by Vercel.
+- Set the floors endpoint to `force-dynamic` with `revalidate = 0`; sync accepts the existing `DUNGEON_SYNC_TOKEN` name as a backward-compatible alternative to `BOT_SYNC_TOKEN`.
+- Added NippleJS deadzone controls, draggable/persisted joystick and skill dock placement, portrait warning, asset progress overlay, Rapier kinematic movement proxy with slope/autostep configuration, quality presets, and optional synthesized ambience/SFX.
+- Updated inventory to a 4×5 glassmorphism grid with item detail tooltips and Gacha currency/pity summary.
+- Added bot Gacha banner, SSR/SR/R rarity pool, hard pity, single/ten pulls, duplicate shards, daily gem claim, collection/history commands, and Node built-in tests.
+- Verification: web JS/JSX syntax and route-uniqueness checks pass; bot Gacha tests and JavaScript syntax checks pass. Production Next.js build could not be run in this environment because npm registry access failed with `EAI_AGAIN`; run `npm run build` in Vercel or a network-enabled environment to verify the complete dependency build.
