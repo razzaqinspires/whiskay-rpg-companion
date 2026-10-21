@@ -1,0 +1,15 @@
+{
+  "image": "/assets/ui-atlas.svg",
+  "format": "svg-atlas",
+  "cellSize": [96, 96],
+  "icons": {
+    "potion": { "x": 8, "y": 8, "width": 88, "height": 88 },
+    "weapon": { "x": 104, "y": 8, "width": 88, "height": 88 },
+    "guard": { "x": 200, "y": 8, "width": 88, "height": 88 },
+    "buff": { "x": 296, "y": 8, "width": 80, "height": 88 },
+    "chest": { "x": 8, "y": 104, "width": 88, "height": 88 },
+    "reward": { "x": 104, "y": 104, "width": 88, "height": 88 },
+    "rune": { "x": 200, "y": 104, "width": 88, "height": 88 },
+    "map": { "x": 296, "y": 104, "width": 80, "height": 88 }
+  }
+}

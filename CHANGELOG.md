@@ -15,3 +15,14 @@
 - Added procedural forest, stylized player, guide NPCs, dummy enemies, checkpoint interaction, weather presets, season palette changes, keyboard and touch-button movement, and fullscreen toggle.
 - Added Adventure/Dungeon navigation to the landing page.
 - Scope note: this is a playable prototype, not a production open-world engine. Chunk streaming, persistent server checkpoints, real enemy combat AI/telegraphs, rigged character assets, and live bot synchronization remain follow-up work.
+
+## 2.1.0 — Dungeon combat and mobile controls
+- Added a dungeon HUD minimap with player, guardian, and exit/next-floor markers.
+- Added a visible enemy wind-up telegraph and timed real-time enemy attacks; player attacks no longer trigger an immediate automatic counterattack.
+- Dodge now has a 400 ms invulnerability window and a 1.2 s cooldown, with a cooldown indicator and Shift keyboard binding.
+- Added responsive minimap/telegraph styling and fullscreen toggle behavior that avoids redundant fullscreen requests.
+- Adventure mode now has a drag virtual analog, a position/checkpoint minimap, and local save/restore for position, checkpoint, weather, and season.
+- Bot RPG expansion accepts `use potion 1`, supports `usepotion`, and provides `adventure exit`.
+
+### Scope note
+This release improves the existing playable prototypes. Full server-authoritative two-way real-time synchronization, persistent shared inventory/equipment across the legacy RPG store and expansion store, chunk-streamed open world, advanced enemy navigation, and production GLB/audio asset packs still require a backend and asset pipeline; they are not represented as completed here.
