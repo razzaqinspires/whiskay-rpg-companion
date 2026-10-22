@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const route = fs.readFileSync('app/api/player/sync/route.js', 'utf8');
+assert.match(route, /export const dynamic = 'force-dynamic'/);
+assert.match(route, /export async function GET/);
+assert.match(route, /export async function POST/);
+assert.match(route, /SUPABASE_URL/);
+assert.match(route, /memory-mock/);
+assert.match(route, /sanitizeState/);
+assert.match(route, /PLAYER_SYNC_TOKEN/);
+console.log('Player sync API static checks: 7/7 passed');

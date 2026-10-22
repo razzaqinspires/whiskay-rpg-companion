@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const quick = fs.readFileSync('components/QuickUseUI.jsx','utf8');
+const boss = fs.readFileSync('components/EliteBoss.jsx','utf8');
+const game = fs.readFileSync('components/GameClient.jsx','utf8');
+const css = fs.readFileSync('app/globals.css','utf8');
+assert.match(quick,/onUsePotion/);
+assert.match(quick,/potions <= 0 \|\| hp >= maxHp/);
+assert.match(boss,/ringGeometry/);
+assert.match(boss,/whiskay:boss-aoe/);
+assert.match(boss,/timer\.current = 1\.05/);
+assert.match(game,/<EliteBoss floor=\{floor\} playerPos=\{playerPos\} enabled=\{enemyHp>0\}\/>/);
+assert.match(game,/<QuickUseUI player=\{player\} onUsePotion=/);
+assert.match(game,/Math\.hypot\(dx,dz\)/);
+assert.match(css,/\.quick-use-dock/);
+console.log('Stage 4 static checks: 9/9 passed');

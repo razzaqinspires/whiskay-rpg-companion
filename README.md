@@ -80,3 +80,12 @@ The game can use rigged GLB assets without losing the existing procedural fallba
 Place the matching optimized files in `public/assets/models/` (or use a trusted HTTPS asset URL with appropriate CORS headers). Leave either variable unset to keep its procedural fallback. The GLB controller selects animation clips by case-insensitive names containing `idle`, `walk`, `run`, `jump`, `attack`/`slash`, `dodge`/`roll`, or `hit`/`hurt`. If a clip is absent, it falls back to idle/first available clip. Use a consistent humanoid rig and normalized model scale/orientation for best results. The preload hook warms configured GLBs; it does not bundle or manufacture model files.
 
 A compact FPS meter is shown in the upper-left safe area on Adventure and Dungeon. It measures requestAnimationFrame cadence (a useful display estimate, not a GPU profiler). Adventure's tree models use distance-based LOD. Start with Graphics Quality Low on mobile; test FPS after the device has warmed up.
+
+
+## Stage 8 — Open-world chunking and World Boss
+
+- `components/WorldManager.jsx` streams procedural tree chunks around the player (3×3 neighborhood, 20-unit chunks) and lets Three.js frustum culling and Drei `Detailed` reduce off-screen/distant cost.
+- `components/WorldBoss.jsx` is a lightweight procedural boss with a pulsing red AoE telegraph and a `whiskay:worldboss-aoe` event after its wind-up. Adventure mode has a local prototype HP bar and potion quick-use dock.
+- Quick-use HP/potions are local prototype state, not yet authoritative server inventory. This does not guarantee 60 FPS on every phone; test the target device and use Low graphics if needed.
+
+Verify with `npm run verify:stage8`.

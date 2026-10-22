@@ -1,0 +1,14 @@
+import fs from 'node:fs';
+const checks=[];
+const world=fs.readFileSync(new URL('../components/WorldManager.jsx',import.meta.url),'utf8');
+const boss=fs.readFileSync(new URL('../components/WorldBoss.jsx',import.meta.url),'utf8');
+const adventure=fs.readFileSync(new URL('../components/AdventureClient.jsx',import.meta.url),'utf8');
+checks.push(['chunk radius and chunk size',world.includes('CHUNK_SIZE = 20')&&world.includes('RADIUS = 1')]);
+checks.push(['distance LOD',world.includes('<Detailed distances=')]);
+checks.push(['boss AoE warning ring',boss.includes('ringGeometry')&&boss.includes("phase.current='warning'")]);
+checks.push(['boss event emitted',boss.includes('whiskay:worldboss-aoe')]);
+checks.push(['adventure loads chunk manager',adventure.includes('<WorldManager position={pos} season={season}/>')]);
+checks.push(['adventure loads world boss',adventure.includes('<WorldBoss position=')]);
+checks.push(['quick use UI integrated',adventure.includes('<QuickUseUI')&&adventure.includes('useWorldPotion')]);
+for(const [name,ok] of checks) console.log(`${ok?'PASS':'FAIL'} ${name}`);
+if(checks.some(([,ok])=>!ok))process.exitCode=1;

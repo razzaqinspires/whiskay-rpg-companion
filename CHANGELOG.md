@@ -76,3 +76,46 @@ This release improves the existing playable prototypes. Full server-authoritativ
 - Added a closeable schematic world map and local quest-board accept panel.
 - Kept existing GLB/preload/FPS, dungeon floor and dynamic API route structure.
 - Verified API route uniqueness with `npm run verify:routes`; production build and Android runtime still require deployment testing.
+
+
+## Open World Action Update v2
+- Fixed camera-relative joystick forward/back mapping.
+- Added touch actions: jump, sprint, attack, block, loot/interact.
+- Added autonomous day/night and weather cycle, village houses, and collectible physical coins.
+- Added joystick direction mock tests (`npm run verify:joystick`).
+
+
+## Stage 1 — Story Lore & Dungeon Mechanics
+- Added touch-friendly StoryLoreUI and Adventure NPC lore interaction.
+- Added RangedMonster with floor-scaled cooldown damage to player HP.
+- Added distinct lighting and fog profiles for Dungeon Floors 1 and 2.
+- Added `npm run verify:stage1` static checks.
+
+
+## Stage 2 — Player Sync API
+- Added authenticated dynamic GET/POST `/api/player/sync` for WhatsApp player IDs and Gold/Level/Floor/Equipment.
+- Added Supabase upsert/read adapter with process-local memory mock fallback.
+- Added `npm run verify:player-sync` static checks.
+
+
+## Bot-side RPG Sync (repository terpisah)
+- Added ``src/plugins/games/rpg-sync.js` pada repositori bot Whiskay`, an ES Module dynamic command for fetching player status via the Stage 2 API.
+- Added plugin environment/setup notes and static checks.
+
+
+## Stage 4 — Boss AoE + Quick Use
+- Added a touch-friendly Potion dock connected to existing potion healing logic.
+- Added a lightweight Elite Boss for Floor 5 with a ground AoE telegraph, delayed impact, and dodge-radius check.
+- Added static verification script `verify:stage4`.
+
+
+## Integration cleanup — October 2026
+
+- Removed the misplaced generic Baileys plugin from the website repository; the native bot-side
+  command now belongs under `src/plugins/games/rpg-sync.js` in the separate bot repository.
+- Kept one snapshot write contract (`POST /api/sync`) and one dashboard read contract
+  (`GET /api/player?player=...`) using the same opaque player ID.
+- Removed the incompatible `/api/player/sync` route and legacy root `/api` handlers to avoid
+  duplicate endpoints and phone-ID/hash-ID mismatches.
+- The older Stage 2 entry above describes a route that has since been removed; use the corrected
+  contract in `STAGE-2-PLAYER-SYNC-API.md`.

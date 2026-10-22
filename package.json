@@ -7,7 +7,12 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "verify:routes": "node scripts/verify-routes.mjs"
+    "verify:routes": "node scripts/verify-routes.mjs",
+    "verify:joystick": "node scripts/verify-joystick.mjs",
+    "verify:stage1": "node scripts/verify-stage1.mjs",
+    "verify:stage4": "node scripts/verify-stage4.mjs",
+    "verify:stage5": "node scripts/verify-stage5.mjs",
+    "verify:stage8": "node scripts/verify-stage8.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^9.122.0",

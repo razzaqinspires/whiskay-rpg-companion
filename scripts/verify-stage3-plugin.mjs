@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const p = fs.readFileSync('bot-plugin/rpg-sync.js', 'utf8');
+assert.match(p, /export default handler/);
+assert.match(p, /handler\.command = \/\^\(rpgstatus\|rpg\)/);
+assert.match(p, /RPG_SYNC_API_URL/);
+assert.match(p, /RPG_SYNC_API_TOKEN/);
+assert.match(p, /Authorization: `Bearer \$\{API_TOKEN\}`/);
+assert.match(p, /searchParams\.set\('phone', playerId\)/);
+assert.match(p, /player\.gold/);
+assert.match(p, /player\.level/);
+console.log('Stage 3 plugin static checks: 8/8 passed');

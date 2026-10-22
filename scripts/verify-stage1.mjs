@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+const adventure=fs.readFileSync('components/AdventureClient.jsx','utf8');
+const game=fs.readFileSync('components/GameClient.jsx','utf8');
+assert.ok(adventure.includes('StoryLoreUI'), 'Adventure should mount lore UI');
+assert.ok(adventure.includes('openNpcLore'), 'NPC lore interaction should exist');
+assert.ok(game.includes('RangedMonster'), 'Dungeon should mount ranged monster');
+assert.ok(game.includes('whiskay:ranged-hit'), 'Ranged damage event listener should exist');
+assert.ok(game.includes('floor===2'), 'Floor 2 lighting/environment should exist');
+console.log('Stage 1 static checks: 5/5 passed');

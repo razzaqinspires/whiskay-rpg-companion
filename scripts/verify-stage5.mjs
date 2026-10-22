@@ -1,0 +1,15 @@
+import { readFile } from 'node:fs/promises';
+import assert from 'node:assert/strict';
+const daily = await readFile(new URL('../app/api/player/daily/route.js', import.meta.url), 'utf8');
+const shop = await readFile(new URL('../app/api/player/shop/route.js', import.meta.url), 'utf8');
+const schema = await readFile(new URL('../schema.sql', import.meta.url), 'utf8');
+assert.match(daily, /claim_player_daily/);
+assert.match(daily, /authorization/);
+assert.match(daily, /\[a-f0-9\]\{32\}/i);
+assert.match(shop, /buy_player_item/);
+assert.match(shop, /potion-small/);
+assert.match(shop, /authorization/);
+assert.match(schema, /for update/i);
+assert.match(schema, /interval '24 hours'/i);
+assert.match(schema, /insufficient_gold/);
+console.log('Stage 5 verification: 9 checks passed');
