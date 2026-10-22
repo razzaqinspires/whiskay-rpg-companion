@@ -19,7 +19,8 @@
     "verify:stage14": "node scripts/verify-stage14.mjs",
     "verify:stage15": "node scripts/verify-stage15.mjs",
     "verify:stage16": "node scripts/verify-stage16.mjs",
-    "verify:stage17": "node scripts/verify-stage17.mjs"
+    "verify:stage17": "node scripts/verify-stage17.mjs",
+    "verify:stage18": "node scripts/verify-stage18.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^9.122.0",

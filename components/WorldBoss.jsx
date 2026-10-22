@@ -4,7 +4,7 @@ import { useFrame } from '@react-three/fiber';
 import * as THREE from 'three';
 export default function WorldBoss({ position = {x: 11, z: -12}, enabled = true }) {
   const root=useRef(null), ring=useRef(null), material=useRef(null), phase=useRef('idle'), timer=useRef(3), target=useRef(new THREE.Vector3()), last=useRef(0);
-  useEffect(()=>{ phase.current='idle'; timer.current=2.5; if(ring.current) ring.current.visible=false; },[enabled]);
+  useEffect(()=>{ if(enabled) window.dispatchEvent(new CustomEvent('whiskay:worldboss-spawned',{detail:{x:position.x,z:position.z}})); phase.current='idle'; timer.current=2.5; if(ring.current) ring.current.visible=false; },[enabled]);
   useFrame((_,dt)=>{
     if(!enabled){if(ring.current)ring.current.visible=false;return;}
     const step=Math.min(dt,.05); if(root.current)root.current.rotation.y+=step*.35; timer.current-=step;

@@ -324,3 +324,55 @@ grant execute on function public.guild_join(text,text) to service_role;
 grant execute on function public.guild_kick(text,text) to service_role;
 grant execute on function public.guild_donate(text,integer) to service_role;
 grant execute on function public.guild_info(text) to service_role;
+
+
+-- Stage 18: server-authoritative global auction. Every mutation locks player rows and listing rows.
+create table if not exists public.rpg_auction_listings (
+ id uuid primary key default gen_random_uuid(), seller_player_id text not null, item_id text not null,
+ item_payload jsonb not null, price bigint not null check(price > 0 and price <= 100000000),
+ status text not null default 'active' check(status in ('active','sold','cancelled')), buyer_player_id text,
+ created_at timestamptz not null default now(), sold_at timestamptz
+);
+create index if not exists rpg_auction_active_created_idx on public.rpg_auction_listings(status,created_at desc);
+alter table public.rpg_auction_listings enable row level security;
+revoke all on public.rpg_auction_listings from public, anon, authenticated;
+create or replace function public.auction_sell_item(p_player_id text,p_item_id text,p_price bigint) returns jsonb language plpgsql security definer set search_path=public as $$
+declare v_payload jsonb; v_inventory jsonb; v_item jsonb; v_new jsonb; v_listing public.rpg_auction_listings; v_qty int; v_now timestamptz:=now();
+begin
+ if p_player_id !~ '^[a-fA-F0-9]{32}$' or p_item_id !~ '^[a-z0-9_-]{2,64}$' or p_price<1 or p_price>100000000 then return jsonb_build_object('ok',false,'error','invalid_listing'); end if;
+ select payload into v_payload from public.player_snapshots where player_id=p_player_id for update; if not found then return jsonb_build_object('ok',false,'error','player_not_found'); end if;
+ v_inventory:=case when jsonb_typeof(v_payload->'inventory')='array' then v_payload->'inventory' else '[]'::jsonb end;
+ select value into v_item from jsonb_array_elements(v_inventory) e(value) where value->>'id'=p_item_id limit 1;
+ if v_item is null then return jsonb_build_object('ok',false,'error','insufficient_item'); end if;
+ v_qty:=greatest(1,coalesce((v_item->>'quantity')::int,1));
+ if v_qty>1 then select coalesce(jsonb_agg(case when value->>'id'=p_item_id then jsonb_set(value,'{quantity}',to_jsonb(v_qty-1),true) else value end),'[]'::jsonb) into v_new from jsonb_array_elements(v_inventory) e(value);
+ else select coalesce(jsonb_agg(value),'[]'::jsonb) into v_new from jsonb_array_elements(v_inventory) e(value) where value->>'id'<>p_item_id; end if;
+ insert into public.rpg_auction_listings(seller_player_id,item_id,item_payload,price) values(p_player_id,p_item_id,jsonb_set(v_item,'{quantity}',to_jsonb(1),true),p_price) returning * into v_listing;
+ update public.player_snapshots set payload=jsonb_set(v_payload,'{inventory}',v_new,true),updated_at=v_now where player_id=p_player_id;
+ return jsonb_build_object('ok',true,'listing',jsonb_build_object('id',v_listing.id,'itemId',v_listing.item_id,'price',v_listing.price));
+end $$;
+create or replace function public.auction_list_items(p_player_id text) returns jsonb language plpgsql security definer set search_path=public as $$
+declare v_rows jsonb;
+begin if p_player_id !~ '^[a-fA-F0-9]{32}$' then return jsonb_build_object('ok',false,'error','invalid_user_id'); end if;
+ select coalesce(jsonb_agg(jsonb_build_object('id',id,'itemId',item_id,'price',price,'sellerId',seller_player_id,'createdAt',created_at) order by created_at desc),'[]'::jsonb) into v_rows from (select * from public.rpg_auction_listings where status='active' order by created_at desc limit 50) a;
+ return jsonb_build_object('ok',true,'listings',v_rows); end $$;
+create or replace function public.auction_buy_item(p_player_id text,p_listing_id text) returns jsonb language plpgsql security definer set search_path=public as $$
+declare v_listing public.rpg_auction_listings; v_buyer jsonb; v_seller jsonb; v_inv jsonb; v_item jsonb; v_gold bigint; v_now timestamptz:=now();
+begin if p_player_id !~ '^[a-fA-F0-9]{32}$' then return jsonb_build_object('ok',false,'error','invalid_user_id'); end if;
+ select * into v_listing from public.rpg_auction_listings where id::text=p_listing_id and status='active' for update; if not found then return jsonb_build_object('ok',false,'error','listing_not_found'); end if;
+ if v_listing.seller_player_id=p_player_id then return jsonb_build_object('ok',false,'error','cannot_buy_own_listing'); end if;
+ perform 1 from public.player_snapshots where player_id in (p_player_id,v_listing.seller_player_id) order by player_id for update;
+ select payload into v_buyer from public.player_snapshots where player_id=p_player_id; if not found then return jsonb_build_object('ok',false,'error','player_not_found'); end if;
+ v_gold:=greatest(0,coalesce((v_buyer->>'gold')::bigint,0)); if v_gold<v_listing.price then return jsonb_build_object('ok',false,'error','insufficient_gold','gold',v_gold,'price',v_listing.price); end if;
+ select payload into v_seller from public.player_snapshots where player_id=v_listing.seller_player_id; if not found then return jsonb_build_object('ok',false,'error','seller_not_found'); end if;
+ v_inv:=case when jsonb_typeof(v_buyer->'inventory')='array' then v_buyer->'inventory' else '[]'::jsonb end; v_item:=jsonb_set(v_listing.item_payload,'{quantity}',to_jsonb(1),true);
+ update public.player_snapshots set payload=jsonb_set(jsonb_set(v_buyer,'{gold}',to_jsonb(v_gold-v_listing.price),true),'{inventory}',v_inv||jsonb_build_array(v_item),true),updated_at=v_now where player_id=p_player_id;
+ update public.player_snapshots set payload=jsonb_set(coalesce(v_seller,'{}'::jsonb),'{gold}',to_jsonb(greatest(0,coalesce((v_seller->>'gold')::bigint,0))+v_listing.price),true),updated_at=v_now where player_id=v_listing.seller_player_id;
+ update public.rpg_auction_listings set status='sold',buyer_player_id=p_player_id,sold_at=v_now where id=v_listing.id;
+ return jsonb_build_object('ok',true,'itemId',v_listing.item_id,'price',v_listing.price,'gold',v_gold-v_listing.price); end $$;
+revoke all on function public.auction_sell_item(text,text,bigint) from public,anon,authenticated;
+revoke all on function public.auction_list_items(text) from public,anon,authenticated;
+revoke all on function public.auction_buy_item(text,text) from public,anon,authenticated;
+grant execute on function public.auction_sell_item(text,text,bigint) to service_role;
+grant execute on function public.auction_list_items(text) to service_role;
+grant execute on function public.auction_buy_item(text,text) to service_role;
