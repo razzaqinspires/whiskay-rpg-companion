@@ -45,12 +45,9 @@ export async function POST(request) {
     const existing = rows[0]?.payload && typeof rows[0].payload === 'object' &&
       !Array.isArray(rows[0].payload) ? rows[0].payload : {};
     const merged = { ...existing, ...payload };
-    // Economy fields are server-authoritative after their first value exists. A stale
-    // local bot save must never roll back Gold/materials/items changed by RPC transactions.
-    const authoritative = ['gold', 'inventory', 'potions', 'gacha', 'materials', 'dailyClaimedAt'];
-    for (const field of authoritative) {
-      if (Object.prototype.hasOwnProperty.call(existing, field)) merged[field] = existing[field];
-    }
+    // Bot reads the current snapshot before player actions. Merge the submitted player
+    // state so bot-originated XP/level/gold changes are visible to the website as well.
+    // This endpoint is not a server-authoritative transaction; race-safe economy changes require dedicated Supabase RPCs.
 
     const updatedAt = new Date().toISOString();
     const write = await fetch(`${base}/rest/v1/player_snapshots?on_conflict=player_id`, {

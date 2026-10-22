@@ -18,7 +18,7 @@ export default function DestructibleObject({ id, position, kind = 'tree', materi
       setHits(hitsRequired);
       setDestroyed(true);
       setBurst(true);
-      if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('whiskay:resource-gathered', { detail: { id, material, amount: kind === 'ore' ? 2 : 3, kind } }));
+      if (typeof window !== 'undefined') { window.dispatchEvent(new CustomEvent('whiskay:resource-gathered', { detail: { id, material, amount: kind === 'ore' ? 2 : 3, kind } })); window.dispatchEvent(new CustomEvent('whiskay:sfx', { detail: { kind: 'mine', position: { x: position?.[0] || 0, y: .5, z: position?.[2] || 0 } } })); }
     } else setHits(current => current + 1);
   }, [hitToken, targeted, destroyed, hits, hitsRequired, id, material, kind]);
   useFrame((_, dt) => {

@@ -231,3 +231,96 @@ do $$ begin
     alter publication supabase_realtime add table public.player_snapshots;
   end if;
 end $$;
+
+
+-- Stage 16: Guild / faction economy. All mutations are performed inside SECURITY DEFINER RPCs.
+create table if not exists public.rpg_guilds (
+  id text primary key default replace(gen_random_uuid()::text, '-', ''),
+  name text not null unique,
+  leader_player_id text not null check (leader_player_id ~ '^[a-fA-F0-9]{32}$'),
+  level integer not null default 1 check (level >= 1),
+  treasury bigint not null default 0 check (treasury >= 0),
+  created_at timestamptz not null default now()
+);
+create table if not exists public.rpg_guild_members (
+  player_id text primary key check (player_id ~ '^[a-fA-F0-9]{32}$'),
+  guild_id text not null references public.rpg_guilds(id) on delete cascade,
+  role text not null default 'member' check (role in ('leader','member')),
+  joined_at timestamptz not null default now()
+);
+alter table public.rpg_guilds enable row level security;
+alter table public.rpg_guild_members enable row level security;
+
+create or replace function public.guild_create(p_player_id text, p_name text) returns jsonb
+language plpgsql security definer set search_path=public as $$
+declare v_payload jsonb; v_gold integer; v_guild public.rpg_guilds; v_now timestamptz:=now();
+begin
+ if p_player_id !~ '^[a-fA-F0-9]{32}$' or length(trim(p_name))<3 or length(p_name)>32 then return jsonb_build_object('ok',false,'error','invalid_guild_name'); end if;
+ if exists(select 1 from public.rpg_guild_members where player_id=p_player_id) then return jsonb_build_object('ok',false,'error','already_in_guild'); end if;
+ insert into public.player_snapshots(player_id,payload,updated_at) values(p_player_id,jsonb_build_object('gold',0,'inventory','[]'::jsonb),v_now) on conflict(player_id) do nothing;
+ select payload into v_payload from public.player_snapshots where player_id=p_player_id for update;
+ v_gold:=greatest(0,coalesce((v_payload->>'gold')::integer,0)); if v_gold<10000 then return jsonb_build_object('ok',false,'error','insufficient_gold','price',10000,'gold',v_gold); end if;
+ update public.player_snapshots set payload=jsonb_set(v_payload,'{gold}',to_jsonb(v_gold-10000),true),updated_at=v_now where player_id=p_player_id;
+ insert into public.rpg_guilds(name,leader_player_id) values(trim(p_name),p_player_id) returning * into v_guild;
+ insert into public.rpg_guild_members(player_id,guild_id,role) values(p_player_id,v_guild.id,'leader');
+ return jsonb_build_object('ok',true,'guild',jsonb_build_object('id',v_guild.id,'name',v_guild.name,'level',v_guild.level,'treasury',v_guild.treasury));
+exception when unique_violation then return jsonb_build_object('ok',false,'error','guild_name_taken'); end; $$;
+
+create or replace function public.guild_join(p_player_id text,p_guild_id text) returns jsonb
+language plpgsql security definer set search_path=public as $$
+declare v_guild public.rpg_guilds;
+begin
+ if p_player_id !~ '^[a-fA-F0-9]{32}$' then return jsonb_build_object('ok',false,'error','invalid_user_id'); end if;
+ if exists(select 1 from public.rpg_guild_members where player_id=p_player_id) then return jsonb_build_object('ok',false,'error','already_in_guild'); end if;
+ select * into v_guild from public.rpg_guilds where id=p_guild_id for update; if not found then return jsonb_build_object('ok',false,'error','guild_not_found'); end if;
+ insert into public.rpg_guild_members(player_id,guild_id,role) values(p_player_id,v_guild.id,'member');
+ return jsonb_build_object('ok',true,'guild',jsonb_build_object('id',v_guild.id,'name',v_guild.name,'level',v_guild.level,'treasury',v_guild.treasury));
+end; $$;
+
+create or replace function public.guild_kick(p_player_id text,p_target_id text) returns jsonb
+language plpgsql security definer set search_path=public as $$
+declare v_member public.rpg_guild_members; v_guild public.rpg_guilds; v_target public.rpg_guild_members;
+begin
+ select * into v_member from public.rpg_guild_members where player_id=p_player_id; if not found then return jsonb_build_object('ok',false,'error','not_guild_member'); end if;
+ select * into v_guild from public.rpg_guilds where id=v_member.guild_id for update;
+ if v_guild.leader_player_id<>p_player_id then return jsonb_build_object('ok',false,'error','not_guild_leader'); end if;
+ select * into v_target from public.rpg_guild_members where player_id=p_target_id and guild_id=v_guild.id; if not found then return jsonb_build_object('ok',false,'error','member_not_found'); end if;
+ if p_target_id=p_player_id then return jsonb_build_object('ok',false,'error','invalid_trade'); end if;
+ delete from public.rpg_guild_members where player_id=p_target_id;
+ return jsonb_build_object('ok',true,'guild',jsonb_build_object('id',v_guild.id,'name',v_guild.name,'level',v_guild.level,'treasury',v_guild.treasury));
+end; $$;
+
+create or replace function public.guild_donate(p_player_id text,p_amount integer) returns jsonb
+language plpgsql security definer set search_path=public as $$
+declare v_member public.rpg_guild_members; v_guild public.rpg_guilds; v_payload jsonb; v_gold integer; v_now timestamptz:=now();
+begin
+ if p_amount is null or p_amount<1 or p_amount>1000000 then return jsonb_build_object('ok',false,'error','invalid_trade'); end if;
+ select * into v_member from public.rpg_guild_members where player_id=p_player_id; if not found then return jsonb_build_object('ok',false,'error','not_guild_member'); end if;
+ insert into public.player_snapshots(player_id,payload,updated_at) values(p_player_id,jsonb_build_object('gold',0,'inventory','[]'::jsonb),v_now) on conflict(player_id) do nothing;
+ select payload into v_payload from public.player_snapshots where player_id=p_player_id for update;
+ v_gold:=greatest(0,coalesce((v_payload->>'gold')::integer,0)); if v_gold<p_amount then return jsonb_build_object('ok',false,'error','insufficient_gold','gold',v_gold,'price',p_amount); end if;
+ select * into v_guild from public.rpg_guilds where id=v_member.guild_id for update;
+ update public.player_snapshots set payload=jsonb_set(v_payload,'{gold}',to_jsonb(v_gold-p_amount),true),updated_at=v_now where player_id=p_player_id;
+ update public.rpg_guilds set treasury=treasury+p_amount, level=1+floor((treasury+p_amount)/10000)::integer where id=v_guild.id returning * into v_guild;
+ return jsonb_build_object('ok',true,'guild',jsonb_build_object('id',v_guild.id,'name',v_guild.name,'level',v_guild.level,'treasury',v_guild.treasury));
+end; $$;
+
+create or replace function public.guild_info(p_player_id text) returns jsonb
+language plpgsql security definer set search_path=public as $$
+declare v_member public.rpg_guild_members; v_guild public.rpg_guilds; v_count integer;
+begin
+ select * into v_member from public.rpg_guild_members where player_id=p_player_id; if not found then return jsonb_build_object('ok',true,'guild',null); end if;
+ select * into v_guild from public.rpg_guilds where id=v_member.guild_id; select count(*) into v_count from public.rpg_guild_members where guild_id=v_guild.id;
+ return jsonb_build_object('ok',true,'guild',jsonb_build_object('id',v_guild.id,'name',v_guild.name,'level',v_guild.level,'treasury',v_guild.treasury,'members',v_count,'role',v_member.role));
+end; $$;
+
+revoke all on function public.guild_create(text,text) from public,anon,authenticated;
+revoke all on function public.guild_join(text,text) from public,anon,authenticated;
+revoke all on function public.guild_kick(text,text) from public,anon,authenticated;
+revoke all on function public.guild_donate(text,integer) from public,anon,authenticated;
+revoke all on function public.guild_info(text) from public,anon,authenticated;
+grant execute on function public.guild_create(text,text) to service_role;
+grant execute on function public.guild_join(text,text) to service_role;
+grant execute on function public.guild_kick(text,text) to service_role;
+grant execute on function public.guild_donate(text,integer) to service_role;
+grant execute on function public.guild_info(text) to service_role;
