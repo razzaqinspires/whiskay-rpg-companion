@@ -1,91 +1,119 @@
-# Whiskay RPG — Next.js 3D Arena Scaffold
+# WHISKAY RPG × WHISKAY Bot
 
-A browser-first anime-inspired RPG prototype with explicit `/dungeon` and `/inventory` routes, 10 floor records, responsive HUD, procedural cel/toon-shaded character/enemy, touch joystick, keyboard controls, sound cues, portrait rotation gate, optional device-orientation permission, and local browser save.
+<p align="center">
+  <strong>Open-world RPG · WhatsApp automation · Smart Energy · Supabase API</strong><br/>
+  <em>Modular codebases, auditable changes, mobile-first gameplay.</em>
+</p>
 
-## Tech stack
-- Next.js 14 / React 18
-- Three.js + React Three Fiber + Drei
-- `@react-three/rapier` for scene physics/colliders
-- Zustand for player state
-- Web Audio API for per-action SFX
+<p align="center">
+  ![Node.js](https://img.shields.io/badge/Node.js-20%2B-339933?logo=node.js&logoColor=white)
+  ![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)
+  ![React Three Fiber](https://img.shields.io/badge/React%20Three%20Fiber-WebGL-blue)
+  ![Supabase](https://img.shields.io/badge/Supabase-Realtime-3ECF8E?logo=supabase&logoColor=white)
+</p>
 
-## Run locally
-```bash
-npm install
-npm run dev
+<p align="center">
+  ![Repository visitor counter](https://komarev.com/ghpvc/?username=YOUR_GITHUB_USERNAME&repo=WHISKAY-RPG&label=Repository%20badge%20views&color=6d5dfc)
+</p>
+
+> **Analytics note:** replace `YOUR_GITHUB_USERNAME` and `WHISKAY-RPG` with the actual public repository owner/name. The public badge counts badge views, not authoritative unique GitHub clones or GitHub's private traffic analytics.
+
+## Project boundaries
+
+This repository family has two independent deployables. The bot owns WhatsApp commands, energy telemetry, menus and plugin loading. The website owns the Next.js UI, 3D environment, API routes and Supabase data. They communicate through authenticated HTTP API contracts; do not merge their source trees.
+
+## Architecture map
+
+```mermaid
+flowchart LR
+  U[WhatsApp user] --> B[Baileys socket]
+  B --> S[Serializer / command parser]
+  S --> M[Rate limit + cooldown middleware]
+  M --> E[Smart Energy Worker]
+  E --> P[Dynamic plugin registry]
+  P -->|RPG, AI, broadcast, utility| B
+  P -->|authenticated REST| API[Next.js API Routes]
+  W[Open-world frontend / R3F] --> RT[Supabase Realtime subscription]
+  W --> API
+  API --> RPC[Supabase SQL RPC / atomic transactions]
+  RPC --> DB[(player_snapshots and game tables)]
+  DB --> RT
+  G[GitHub push] --> A[GitHub Actions audit workflow]
+  A --> H[docs/history/updates.jsonl]
+  H --> DOC[Markdown changelog] 
 ```
-Open `http://localhost:3000`, then `/dungeon?floor=1&player=<opaque-player-token>` or `/inventory?player=<opaque-player-token>`.
 
-## Deploy to Vercel
-Import this folder as the project root and use the default Next.js build settings. Do not deploy only the contents of `public` or the old static prototype. Every route is an App Router route, so `/dungeon` and `/inventory` are explicit pages rather than rewrites to missing files.
+## Stage 14 highlights
 
-## Bot commands / integration
-The website supports the same `/dungeon?floor=N&player=...` link pattern as the companion bot. The `player` query is presently a routing token only; client progress saves in localStorage and is not trusted server-side. For true bot-to-web sync, add an authenticated API using Supabase and a stable opaque player ID. Never expose `SUPABASE_SERVICE_ROLE_KEY` or `BOT_SYNC_TOKEN` to client-side code.
+### Web RPG
+- Optional Unreal Bloom post-processing is gated behind **Graphics Quality: High**, capped to a 1.25 pixel ratio, and omitted in Low/Medium settings.
+- A rare 3D Storm Wraith appears during rain at night.
+- Fishing is a timing mini-game attached to a 3D lakeside spot.
+- Mira has branching dialogue choices that reveal storm/fishing lore.
+- Existing resource gathering, minimap, boss, day/night, and weather systems are preserved.
 
-## Assets: seed, template, spirit sheet
-- `lib/floors.json` is the existing 10-floor dungeon content source, retained from the current companion.
-- `public/assets/whiskay-rpg-concept.png` is a visual concept reference, not a runtime sprite atlas.
-- Characters are currently generated procedurally from toon-shaded Three.js meshes; no external rigged GLB character asset is bundled. For production anime animation, replace `HeroModel`/`EnemyModel` with rigged `.glb` files and clips from Blender/Mixamo, and add actual sprite/texture atlases in `public/assets`.
+### WhatsApp Bot
+- Energy starts at `100.00%`. Each parsed command gets a bounded decimal cost and the response footer reports consumption and remaining battery.
+- Static-cost commands are marked `📌`; worker-estimated costs are marked `⚡` in detailed menus.
+- `.charge` restores 40% once per 24 hours; `.charge fast` is Premium-only. Premium grants are capped at 30 days per owner action.
+- `.hit`, `.profile`, `.setpayment`, `.bukti`, `.status`, and `.premium` expose usage and owner operations.
+- Menu templates include `minimalist`, `cyberpunk`, and `fantasy`; menu widget switches remain per-user.
+- The loader infers category from `src/plugins/<category>/` when a plugin omits its category.
 
-## Graphics / Vulkan note
-Browsers expose WebGL2 and increasingly WebGPU; a website cannot reliably force the native Vulkan backend. Chromium may use Vulkan internally on supported Android/GPU configurations, but this is browser-controlled. The current renderer requests high-performance WebGL and uses adaptive DPR; it does not claim native Vulkan rendering. WebGPU renderer migration should be a separate tested capability-detection task.
+## Smart Energy: why it is lightweight
 
-## Current scope and limitations
-- Single-player client-side combat prototype, not server-authoritative multiplayer.
-- Touch joystick moves the character model; keyboard movement supports WASD/arrows; combat buttons trigger distinct synthesized sound cues and visual effects.
-- Device orientation permission is optional and browser-dependent. Landscape orientation lock is attempted after user interaction and may be refused by the browser.
-- The floor file preserves the companion's ten floor definitions; balance, hitbox timing and enemy AI require playtesting on actual devices.
+The worker is deliberately **not an LLM call for every command**. A deterministic heuristic uses bounded text/token counts, math-symbol frequency, token diversity, and Jaccard similarity against at most five recent commands. Input is capped at 1,200 characters, costs are clamped to `0.25–8.75%`, and no timer or worker thread is allocated. Per-process read/modify/write operations are serialized; JSON writes use temporary files and rename. See [`docs/stage14/SMART-ENERGY-WORKER.md`](docs/stage14/SMART-ENERGY-WORKER.md).
 
-## Adventure mode prototype
-Run `npm install` and `npm run dev`, then open `/adventure`. This route provides a separate procedural 3D free-roam scene with WASD/arrow-key movement, touch buttons, NPC/enemy visual placeholders, weather/season presets, and a local checkpoint interaction. `/dungeon?floor=1` remains the ten-floor dungeon combat route. This build is a feature prototype; it does not yet include server-authoritative multiplayer, live WhatsApp bot synchronization, streamed world chunks, or full real-time enemy AI.
+Energy is telemetry rather than a hard usage lock: commands continue when the battery reaches zero. This avoids turning a heuristic into a hidden availability limit.
 
-## Aetheria systems update
+## Quick start
 
-- `app/api/*/route.js` is the single owner for API endpoints. Do not recreate a root-level `/api/*.js` directory beside the App Router; Vercel can otherwise emit duplicate functions (`EEXIST`, e.g. `/api/floors`).
-- API handlers explicitly opt into `dynamic = 'force-dynamic'`; `/api/floors` also sets `revalidate = 0`.
-- Adventure now includes a Drei asset progress overlay, portrait-orientation guard, NippleJS analog with a 0.3 force deadzone, draggable/persisted joystick and skill dock positions, adjustable render pixel ratio, Rapier kinematic movement proxy with a 45° slope limit and ground offset, and synthesized optional ambience/SFX controlled by user gesture.
-- Inventory now presents 20 glass-style slots with rarity accents, hover details, and synced gems/pity/shards summary. Gacha pulls are performed through the bot so the existing authenticated server-side sync remains the source of truth.
-- Web route verification: `npm run verify:routes`.
+### Bot
 
-## WhiskayBot Gacha
+```bash
+cp .env.example .env
+# Set OWNERS and any optional API tokens in .env
+npm ci
+npm test
+npm start
+```
 
-- `gacha rates` — banner rates and pity status.
-- `gacha summon 1` / `gacha summon 10` — spend 30 / 270 Aether Gems.
-- `gacha daily` — claim 40 gems once per 24 hours.
-- `gacha history` / `gacha collection` — review pulls and collected spirits.
-- Rates: SSR 3%, SR 17%, R 80%, hard pity at 50 pulls. Duplicate spirits convert to shards. Run `npm test` in the bot project to test the gacha engine.
+Useful commands: `.menu`, `.setmenu`, `.charge`, `.charge fast`, `.hit`, `.profile`, `.status`, `.setpayment`, `.bukti`, `.premium @user 30`.
 
-## 3D mobile control overhaul
-The Adventure scene remains a Three.js 3D world (not a 2D sprite-sheet game). It now uses a smoothed third-person follow camera, camera-relative virtual-joystick movement, and a right-side drag-to-look touch zone. No accelerometer or gyroscope event handlers are used. The notification card can be closed with × or dismissed with a vertical swipe. The existing sprite atlas is concept/reference art only; it is not used as the 3D player or enemy model. Terrain and characters remain procedural 3D toon-shaded placeholders until production GLB assets are supplied.
+### Web RPG
 
-On mobile browsers, fullscreen and landscape locking are best-effort browser APIs. A website cannot universally hide Android system bars, and orientation lock generally requires a user gesture and fullscreen support.
+```bash
+npm ci
+npm run verify:stage14
+npm run verify:stage12-13
+npm run build
+npm run start
+```
 
+Build and runtime tests should be run in the target environment before deployment. This package was statically verified in the current environment; production Next.js build, real WhatsApp sends, Supabase credentials, and smartphone FPS have not been certified here.
 
-### Mobile stability notes
-The 3D Adventure loading overlay has a bounded 9-second fallback for WebViews where `useProgress()` remains at zero. The overlay does not imply every remote asset succeeded: missing assets should use procedural scene content, and errors are reported in the loading label. Mobile HUD positions respect CSS safe-area insets. In landscape combat mode, large side panels are hidden to preserve the viewport; player and enemy status remain compact. Browser fullscreen/orientation locking still depends on platform support.
+## GitHub Flow & autonomy changelog
 
-### Mobile performance profile
-The 3D scenes use capped device-pixel-ratio settings, disabled realtime shadow maps, and reduced foliage/particle counts to improve frame pacing on mid-range Android devices. The graphics selector provides Low, Medium, and High profiles; if frame pacing is still uneven, start with Low and disable the Rain weather effect. The hero uses procedural joint pivots for an idle/walk cycle; Adventure includes separate Wolf, Ember Slime, and Crystal Stag procedural models with different idle motion. These are lightweight placeholder models, not imported production-grade animated GLB rigs.
+The workflow at `.github/workflows/repo-update-history.yml` runs on pushes to `main`/`master` and on manual dispatch. It appends a compact JSONL record with timestamp, branch, commit, actor, and the first line of the commit message to `docs/history/updates.jsonl`. The workflow uses the built-in `GITHUB_TOKEN` with `contents: write`, commits as `github-actions[bot]`, and uses `[skip ci]`/path exclusions to avoid a recursive loop.
 
-### Verification note
-The updated route verifier and JSX transpile parsing passed. A full `next build` was not verified in this environment because `npm install` timed out while accessing the package registry. Test the production build and frame pacing on the target Android/WebView device before replacing the live deployment.
+Recommended flow:
+1. Create a feature branch and update code plus tests.
+2. Run bot tests and web verification/build.
+3. Open a pull request and review the generated change.
+4. Merge to `main`; GitHub Actions records the update metadata.
+5. Periodically summarize JSONL records into a human-readable changelog.
 
-## Rigged GLB models, LOD, and FPS counter
+The workflow records repository metadata; it does not autonomously execute arbitrary code or push unreviewed feature changes.
 
-The game can use rigged GLB assets without losing the existing procedural fallback. Configure these public environment variables in Vercel or `.env.local`:
+## Security & operational notes
 
-- `NEXT_PUBLIC_HERO_GLB_URL=/assets/models/aetheria-hero.glb`
-- `NEXT_PUBLIC_MONSTER_GLB_URL=/assets/models/aetheria-monster.glb`
+- Never commit `.env`, service-role keys, API tokens, or payment secrets.
+- `.bukti` forwards/copies proof media to configured owners; Premium activation must remain a manual verification step.
+- The QRIS image path is stored locally under `data/`; use persistent storage in containers.
+- `antiSpam` and `globalCooldown` switches are owner-only. Turning them off increases abuse risk.
+- The 3D fishing/material prototype uses local page state; server-authoritative inventory persistence is still a separate integration task.
+- The visitor badge is a third-party public service and may be blocked by clients or privacy tools.
 
-Place the matching optimized files in `public/assets/models/` (or use a trusted HTTPS asset URL with appropriate CORS headers). Leave either variable unset to keep its procedural fallback. The GLB controller selects animation clips by case-insensitive names containing `idle`, `walk`, `run`, `jump`, `attack`/`slash`, `dodge`/`roll`, or `hit`/`hurt`. If a clip is absent, it falls back to idle/first available clip. Use a consistent humanoid rig and normalized model scale/orientation for best results. The preload hook warms configured GLBs; it does not bundle or manufacture model files.
+## Documentation archive
 
-A compact FPS meter is shown in the upper-left safe area on Adventure and Dungeon. It measures requestAnimationFrame cadence (a useful display estimate, not a GPU profiler). Adventure's tree models use distance-based LOD. Start with Graphics Quality Low on mobile; test FPS after the device has warmed up.
-
-
-## Stage 8 — Open-world chunking and World Boss
-
-- `components/WorldManager.jsx` streams procedural tree chunks around the player (3×3 neighborhood, 20-unit chunks) and lets Three.js frustum culling and Drei `Detailed` reduce off-screen/distant cost.
-- `components/WorldBoss.jsx` is a lightweight procedural boss with a pulsing red AoE telegraph and a `whiskay:worldboss-aoe` event after its wind-up. Adventure mode has a local prototype HP bar and potion quick-use dock.
-- Quick-use HP/potions are local prototype state, not yet authoritative server inventory. This does not guarantee 60 FPS on every phone; test the target device and use Low graphics if needed.
-
-Verify with `npm run verify:stage8`.
+See [`docs/README.md`](docs/README.md) for the index and the archived Markdown reports gathered from the available Stage 1–13 bot and web project files.

@@ -45,9 +45,11 @@ export async function POST(request) {
     const existing = rows[0]?.payload && typeof rows[0].payload === 'object' &&
       !Array.isArray(rows[0].payload) ? rows[0].payload : {};
     const merged = { ...existing, ...payload };
-    // A partial update must not erase a previously saved inventory.
-    if (!Array.isArray(payload.inventory) && Array.isArray(existing.inventory)) {
-      merged.inventory = existing.inventory;
+    // Economy fields are server-authoritative after their first value exists. A stale
+    // local bot save must never roll back Gold/materials/items changed by RPC transactions.
+    const authoritative = ['gold', 'inventory', 'potions', 'gacha', 'materials', 'dailyClaimedAt'];
+    for (const field of authoritative) {
+      if (Object.prototype.hasOwnProperty.call(existing, field)) merged[field] = existing[field];
     }
 
     const updatedAt = new Date().toISOString();

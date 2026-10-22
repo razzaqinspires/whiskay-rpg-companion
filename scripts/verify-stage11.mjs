@@ -1,0 +1,12 @@
+import { readFile } from 'node:fs/promises';
+import assert from 'node:assert/strict';
+const world = await readFile(new URL('../components/WorldManager.jsx', import.meta.url), 'utf8');
+const adventure = await readFile(new URL('../components/AdventureClient.jsx', import.meta.url), 'utf8');
+assert.match(world, /function DayNightLighting/);
+assert.match(world, /THREE\.MathUtils\.damp/);
+assert.match(world, /function RainParticles/);
+assert.match(world, /count=\{180\}/);
+assert.match(adventure, /worldHour=\{worldHour\} weather=\{weather\}/);
+assert.doesNotMatch(adventure, /<ambientLight intensity=\{isNight/);
+assert.doesNotMatch(adventure, /weather==='Rain'&&<Rain\/>/);
+console.log('Stage 11 verification passed: smooth day/night, weather lighting, bounded rain particles, single light source.');
