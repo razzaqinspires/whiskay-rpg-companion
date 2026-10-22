@@ -95,6 +95,10 @@ Required server-only variables: `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `BO
 - A successful static verifier does not prove live Supabase connectivity, webhook delivery, mobile frame rate, or a complete Next.js production build.
 - The website and bot must be deployed separately. Do not merge their source trees or copy server secrets between environments.
 
+## Stage 19 compatibility note
+
+The Stage 19 changes target the separate WhatsApp bot. Website runtime code is unchanged in this stage; see [Stage 19 audit](docs/STAGE-19-AUDIT.md) for integration boundaries.
+
 ## 📚 Documentation & Archives
 
 The table below lists Markdown documentation present in this repository; paths are relative and GitHub-compatible.

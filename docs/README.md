@@ -140,3 +140,7 @@
 - [stages/STAGE-5-6-SETUP.md](stages/STAGE-5-6-SETUP.md)
 - [stages/STAGE-9-10-SETUP.md](stages/STAGE-9-10-SETUP.md)
 - [stages/VERCEL-DEPLOY-FIX.md](stages/VERCEL-DEPLOY-FIX.md)
+
+## Stage 19
+
+- [Stage 19 — Dual-Update Compatibility Note](STAGE-19-AUDIT.md)
