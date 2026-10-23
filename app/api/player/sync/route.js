@@ -56,7 +56,7 @@ function sanitizeState(input, previous = {}) {
 }
 
 async function readSupabase(playerId) {
-  const base = process.env.SUPABASE_URL?.replace(/\\/$/, '');
+  const base = process.env.SUPABASE_URL?.replace(/\/+$/, '');
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (!base || !key) return { configured: false, player: memoryStore.get(playerId) || null };
   const r = await fetch(`${base}/rest/v1/player_snapshots?player_id=eq.${encodeURIComponent(playerId)}&select=payload,updated_at&limit=1`, {
@@ -68,7 +68,7 @@ async function readSupabase(playerId) {
 }
 
 async function writeSupabase(playerId, payload) {
-  const base = process.env.SUPABASE_URL?.replace(/\\/$/, '');
+  const base = process.env.SUPABASE_URL?.replace(/\/+$/, '');
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
   const updatedAt = new Date().toISOString();
   const row = { player_id: playerId, payload, updated_at: updatedAt };

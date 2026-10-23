@@ -58,10 +58,50 @@ export default function GameClient(){const player=useBattle(s=>s.player),setPlay
  useEffect(()=>{const params=new URLSearchParams(window.location.search);const n=Math.max(1,Math.min(100,Number(params.get('floor')||1)));setFloorNo(n);try{const old=JSON.parse(localStorage.getItem('whiskay-rpg-player')||'null');if(old)setPlayer({...player,...old});const c=JSON.parse(localStorage.getItem('whiskay-rpg-completed')||'[]');const u=Number(localStorage.getItem('whiskay-rpg-unlocked')||1);setProgress({completed:Array.isArray(c)?c:[],unlocked:Math.max(1,u)});}catch{}const playerToken=params.get('player');if(playerToken){fetch('/api/player?player='+encodeURIComponent(playerToken),{cache:'no-store'}).then(r=>r.ok?r.json():null).then(d=>{if(d?.player){const merged={...useBattle.getState().player,...d.player};setPlayer(merged);try{localStorage.setItem('whiskay-rpg-player',JSON.stringify(merged));}catch{}}}).catch(()=>{});}setGate(window.matchMedia('(orientation: portrait)').matches&&window.innerWidth<900);const resize=()=>{const isLand=window.matchMedia('(orientation: landscape)').matches;setLandscape(isLand);if(isLand)setGate(false);};window.addEventListener('resize',resize);window.addEventListener('orientationchange',resize);resize();return()=>{window.removeEventListener('resize',resize);window.removeEventListener('orientationchange',resize)}; // eslint-disable-next-line react-hooks/exhaustive-deps
  },[]);
  const floor=floors.find(x=>x.floor===floorNo)||floors[0];combatRef.current={player,enemyHp,floor,invulnerable,guarding,gate,playerPos};
+ const persist=useCallback((p,pr=progress)=>{
+   try {
+     localStorage.setItem('whiskay-rpg-player',JSON.stringify(p));
+     localStorage.setItem('whiskay-rpg-floor',String(floorNo));
+     localStorage.setItem('whiskay-rpg-completed',JSON.stringify(pr.completed));
+     localStorage.setItem('whiskay-rpg-unlocked',String(pr.unlocked));
+
+     const params=new URLSearchParams(window.location.search);
+     const playerId=params.get('player');
+     const accessToken=params.get('access');
+
+     if(playerId&&accessToken){
+       fetch('/api/player/update',{
+         method:'POST',
+         headers:{'content-type':'application/json'},
+         body:JSON.stringify({
+           playerId,
+           accessToken,
+           payload:{
+             ...p,
+             floor:floorNo,
+             completedFloors:pr.completed,
+             unlockedFloor:pr.unlocked
+           }
+         }),
+         keepalive:true
+       }).then(r=>{
+         if(!r.ok){
+           window.dispatchEvent(new CustomEvent('whiskay:sync-error',{
+             detail:{message:'Server save belum terkonfirmasi.'}
+           }));
+         }
+       }).catch(()=>{
+         window.dispatchEvent(new CustomEvent('whiskay:sync-error',{
+           detail:{message:'Database tidak dapat dijangkau.'}
+         }));
+       });
+     }
+   } catch {}
+ },[floorNo,progress]);
  useEffect(()=>{const onRangedHit=(event)=>{const c=combatRef.current;if(c.gate||c.player.hp<=0)return;const amount=Math.max(1,Number(event.detail?.damage)||5);const next={...c.player,hp:Math.max(0,c.player.hp-(c.guarding?Math.ceil(amount*.35):amount))};setPlayer(next);persist(next);setHudMessage(`Ranged hit · -${amount} HP`);setHitAnim(true);setTimeout(()=>setHitAnim(false),180);playSfx('hit');};window.addEventListener('whiskay:ranged-hit',onRangedHit);return()=>window.removeEventListener('whiskay:ranged-hit',onRangedHit);},[setPlayer,persist]);
  useEffect(()=>{const onBossAoe=(event)=>{const c=combatRef.current;if(c.gate||c.player.hp<=0||c.floor.floor%5!==0)return;const target=event.detail||{};const dx=c.playerPos?.x-Number(target.x||0),dz=c.playerPos?.z-Number(target.z||0);if(Math.hypot(dx,dz)>Number(target.radius||1.65)){setHudMessage('AOE DODGED · SERANGAN MELESET');setLog('Elite Boss: serangan area berhasil kamu hindari!');return;}const amount=Math.max(1,Number(target.damage)||18);const next={...c.player,hp:Math.max(0,c.player.hp-(c.guarding?Math.ceil(amount*.35):amount))};if(next.hp===0){next.losses=(next.losses||0)+1;next.hp=Math.ceil(next.maxHp*.45);setLog(`Elite Boss menghantam ${amount} damage. Kamu tumbang dan kembali dengan ${next.hp} HP.`);}else setLog(`Elite Boss: ledakan area mengenai kamu · -${amount} HP.`);setPlayer(next);persist(next);setHudMessage(`BOSS AOE · -${amount} HP`);setHitAnim(true);window.setTimeout(()=>setHitAnim(false),180);playSfx('hit');};window.addEventListener('whiskay:boss-aoe',onBossAoe);return()=>window.removeEventListener('whiskay:boss-aoe',onBossAoe);},[setPlayer,persist]);
  useEffect(()=>{setEnemyMax(floor.enemy.hp);setEnemyHp(floor.enemy.hp);setSkillReady(true);setGuarding(false);setLog(floor.story?.entryDialogue||`${floor.name}: guardian menghalangi jalan.`);},[floorNo]);
- const persist=useCallback((p,pr=progress)=>{try{localStorage.setItem('whiskay-rpg-player',JSON.stringify(p));localStorage.setItem('whiskay-rpg-floor',String(floorNo));localStorage.setItem('whiskay-rpg-completed',JSON.stringify(pr.completed));localStorage.setItem('whiskay-rpg-unlocked',String(pr.unlocked));const params=new URLSearchParams(window.location.search),playerId=params.get('player'),accessToken=params.get('access');if(playerId&&accessToken){fetch('/api/player/update',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({playerId,accessToken,payload:{...p,floor:floorNo,completedFloors:pr.completed,unlockedFloor:pr.unlocked}}),keepalive:true}).then(r=>{if(!r.ok)window.dispatchEvent(new CustomEvent('whiskay:sync-error',{detail:{message:'Server save belum terkonfirmasi.'}}))}).catch(()=>window.dispatchEvent(new CustomEvent('whiskay:sync-error',{detail:{message:'Database tidak dapat dijangkau.'}}));}}catch{}},[floorNo,progress]);
+
 
  useEffect(()=>{let stopped=false;let attackTimer;const cycle=()=>{attackTimer=setTimeout(()=>{if(stopped)return;const c=combatRef.current;if(!c.gate&&c.enemyHp>0){setEnemyWindup(true);setHudMessage('ENEMY WINDUP · DODGE NOW');setTimeout(()=>{if(stopped)return;setEnemyWindup(false);const now=combatRef.current;if(now.gate||now.enemyHp<=0)return;if(now.invulnerable){setLog('PERFECT DODGE! Serangan guardian meleset.');setHudMessage('PERFECT DODGE');return;}const p={...now.player};let damage=Math.max(1,Math.round((Number(now.floor.enemy.attack)||10)-(p.defense||2)*.12));if(now.guarding){damage=Math.ceil(damage*.35);setGuarding(false);}p.hp=Math.max(0,p.hp-damage);if(p.hp===0){p.losses=(p.losses||0)+1;p.hp=Math.ceil(p.maxHp*.45);setLog(`Guardian mengenai ${damage} damage. Kamu tumbang dan kembali dengan ${p.hp} HP.`);}else setLog(`Guardian menyerang secara real-time: -${damage} HP.`);setPlayer(p);persist(p);playSfx('hit');},620);}cycle();},2800);};cycle();return()=>{stopped=true;clearTimeout(attackTimer);};},[floorNo,gate,persist,setPlayer]);
  const enterArena=async()=>{setGate(false);try{if(!document.fullscreenElement)await document.documentElement.requestFullscreen?.();}catch{}try{if(screen.orientation?.lock)await screen.orientation.lock('landscape');}catch{}try{if(typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function'){const res=await DeviceOrientationEvent.requestPermission();if(res==='granted'){setSensor(true);window.addEventListener('deviceorientation',steerWithSensor);}}else{setSensor(true);window.addEventListener('deviceorientation',steerWithSensor);}}catch{setSensor(false)}};
