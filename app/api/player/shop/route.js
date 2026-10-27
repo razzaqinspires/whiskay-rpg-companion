@@ -16,7 +16,8 @@ export async function POST(request) {
   const userId = typeof body?.userId === 'string' ? body.userId.trim() : '';
   const item = typeof body?.item === 'string' ? body.item.trim().toLowerCase() : '';
   if (!/^[a-f0-9]{32}$/i.test(userId)) return json({ ok: false, error: 'invalid_user_id' }, 400);
-  if (!['potion', 'potion-small', 'small-potion'].includes(item)) return json({ ok: false, error: 'item_not_available' }, 400);
+  if (!['potion', 'potion-small', 'small-potion', 'pet-food'].includes(item)) return json({ ok: false, error: 'item_not_available' }, 400);
+  const itemId = item === 'pet-food' ? 'pet-food' : 'potion-small';
 
   const base = (process.env.SUPABASE_URL || '').replace(/\/+$/, '');
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
@@ -26,7 +27,7 @@ export async function POST(request) {
     const response = await fetch(`${base}/rest/v1/rpc/buy_player_item`, {
       method: 'POST', cache: 'no-store', signal: AbortSignal.timeout(7000),
       headers: { apikey: key, authorization: `Bearer ${key}`, 'content-type': 'application/json' },
-      body: JSON.stringify({ p_player_id: userId, p_item_id: 'potion-small' }),
+      body: JSON.stringify({ p_player_id: userId, p_item_id: itemId }),
     });
     const result = await response.json().catch(() => ({}));
     if (!response.ok) return json({ ok: false, error: 'transaction_failed' }, 502);

@@ -52,16 +52,20 @@ as $$
 declare
   v_payload jsonb;
   v_inventory jsonb;
-  v_item jsonb;
   v_gold integer;
-  v_price integer := 25;
+  v_price integer;
   v_found boolean := false;
+  v_item_name text;
   v_now timestamptz := now();
 begin
   if p_player_id is null or p_player_id !~ '^[a-fA-F0-9]{32}$' then
     return jsonb_build_object('ok', false, 'error', 'invalid_user_id');
   end if;
-  if p_item_id <> 'potion-small' then
+  if p_item_id = 'potion-small' then
+    v_price := 25; v_item_name := 'Small Potion';
+  elsif p_item_id = 'pet-food' then
+    v_price := 10; v_item_name := 'Pet Food';
+  else
     return jsonb_build_object('ok', false, 'error', 'item_not_available');
   end if;
   insert into public.player_snapshots(player_id, payload, updated_at)
@@ -74,21 +78,26 @@ begin
     return jsonb_build_object('ok', false, 'error', 'insufficient_gold', 'gold', v_gold, 'price', v_price);
   end if;
   v_inventory := case when jsonb_typeof(v_payload->'inventory') = 'array' then v_payload->'inventory' else '[]'::jsonb end;
-  select exists(select 1 from jsonb_array_elements(v_inventory) e(value) where value->>'id' = 'potion-small') into v_found;
+  select exists(select 1 from jsonb_array_elements(v_inventory) e(value) where value->>'id' = p_item_id) into v_found;
   if not v_found then
-    v_inventory := v_inventory || jsonb_build_array(jsonb_build_object('id','potion-small','name','Small Potion','type','consumable','slot','consumable','quantity',1,'heal',35));
+    if p_item_id = 'potion-small' then
+      v_inventory := v_inventory || jsonb_build_array(jsonb_build_object('id','potion-small','name',v_item_name,'type','consumable','slot','consumable','quantity',1,'heal',35));
+    else
+      v_inventory := v_inventory || jsonb_build_array(jsonb_build_object('id','pet-food','name',v_item_name,'type','pet-food','slot','consumable','quantity',1,'hungerRestore',35,'energyRestore',12));
+    end if;
   else
-    -- Rebuild only the matching item quantity while retaining every other inventory entry.
-    select coalesce(jsonb_agg(case when value->>'id' = 'potion-small'
+    select coalesce(jsonb_agg(case when value->>'id' = p_item_id
       then jsonb_set(value, '{quantity}', to_jsonb(greatest(0, coalesce((value->>'quantity')::integer, 0)) + 1), true)
       else value end), '[]'::jsonb)
-      into v_inventory from jsonb_array_elements(case when jsonb_typeof(v_payload->'inventory') = 'array' then v_payload->'inventory' else '[]'::jsonb end);
+      into v_inventory from jsonb_array_elements(v_inventory);
   end if;
   v_payload := jsonb_set(v_payload, '{gold}', to_jsonb(v_gold - v_price), true);
   v_payload := jsonb_set(v_payload, '{inventory}', v_inventory, true);
-  v_payload := jsonb_set(v_payload, '{potions}', to_jsonb(greatest(0, coalesce((v_payload->>'potions')::integer, 0)) + 1), true);
+  if p_item_id = 'potion-small' then
+    v_payload := jsonb_set(v_payload, '{potions}', to_jsonb(greatest(0, coalesce((v_payload->>'potions')::integer, 0)) + 1), true);
+  end if;
   update public.player_snapshots set payload = v_payload, updated_at = v_now where player_id = p_player_id;
-  return jsonb_build_object('ok', true, 'item', 'potion-small', 'quantityAdded', 1, 'price', v_price, 'gold', v_gold - v_price, 'inventory', v_inventory);
+  return jsonb_build_object('ok', true, 'item', p_item_id, 'itemName', v_item_name, 'quantityAdded', 1, 'price', v_price, 'gold', v_gold - v_price, 'inventory', v_inventory);
 end;
 $$;
 

@@ -255,3 +255,11 @@ The table below lists Markdown documentation present in this repository; paths a
 **WHISKAY RPG · The world is open. Your story is yours.**
 
 </div>
+
+
+## Stage 20 — 3D Virtual Companion
+- `components/VirtualPet.jsx` renders an animated 3D follower; `PetManagementOverlay.jsx` shows its saved hunger/energy stats.
+- Spirit Seed and Night Wisp only spawn at in-game night (19:00–05:59).
+- `POST /api/player/pet` provides `hatch`, `feed`, and `status` actions, validates the bot token, persists to `player_snapshots`, and consumes pet food from inventory.
+- Configure `BOT_SYNC_TOKEN` (or `DUNGEON_SYNC_TOKEN`) and `SUPABASE_URL` / `SUPABASE_SERVICE_ROLE_KEY` server-side. Do not add the service role key to any `NEXT_PUBLIC_*` variable.
+- See [`docs/STAGE-20-MILESTONE.md`](docs/STAGE-20-MILESTONE.md).
