@@ -1,6 +1,6 @@
 'use client';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { useFrame } from '@react-three/fiber';
+import { useFrame, useThree } from '@react-three/fiber';
 import { Detailed } from '@react-three/drei';
 import * as THREE from 'three';
 import DestructibleObject from './DestructibleObject';
@@ -21,9 +21,10 @@ function WorldChunk({ cx, cz, season }) {
   const trees = useMemo(() => Array.from({length:8},(_,i)=>{const seed=(cx+101)*991+(cz+101)*313+i*17;return {key:`${cx}:${cz}:${i}`,x:cx*CHUNK_SIZE+2+hash(seed)*16,z:cz*CHUNK_SIZE+2+hash(seed+8)*16,scale:.7+hash(seed+19)*.55};}).filter(t=>Math.hypot(t.x,t.z)>5),[cx,cz]);
   return <group>{trees.map(t=><ChunkTree key={t.key} {...t} season={season}/>)}</group>;
 }
-function DayNightLighting({ worldHour = 9, weather = 'Clear' }) {
+function WorldMoodBackground({ color }) { const { scene } = useThree(); useEffect(() => { const previous = scene.background; scene.background = new THREE.Color(color); return () => { scene.background = previous; }; }, [scene, color]); return null; }
+function DayNightLighting({ worldHour = 9, weather = 'Clear', exhausted = false, darknessEvent = false }) {
   const ambient=useRef(),sun=useRef(),fill=useRef(); const targetColor=useRef(new THREE.Color('#fff0cc'));
-  useFrame((_,dt)=>{const hour=((Number(worldHour)||0)%24+24)%24;const daylight=THREE.MathUtils.clamp(Math.sin(((hour-6)/12)*Math.PI),0,1),night=1-daylight;const factor=weather==='Rain'?.62:weather==='Cloudy'?.78:1;const a=.16+daylight*.82*factor+night*.12,s=(.08+daylight*1.55)*factor;if(ambient.current)ambient.current.intensity=THREE.MathUtils.damp(ambient.current.intensity,a,1.8,Math.min(dt,.05));if(sun.current){sun.current.intensity=THREE.MathUtils.damp(sun.current.intensity,s,1.4,Math.min(dt,.05));const angle=((hour-6)/24)*Math.PI*2;sun.current.position.set(Math.cos(angle)*14,Math.max(1.2,Math.sin(angle)*18),4);targetColor.current.set(weather==='Rain'?'#9fb8d0':daylight>.35?'#fff0cc':'#91a9e8');sun.current.color.lerp(targetColor.current,1-Math.exp(-Math.min(dt,.05)*1.2));}if(fill.current)fill.current.intensity=THREE.MathUtils.damp(fill.current.intensity,.12+night*.24,1.5,Math.min(dt,.05));});
+  useFrame((_,dt)=>{const hour=((Number(worldHour)||0)%24+24)%24;const daylight=THREE.MathUtils.clamp(Math.sin(((hour-6)/12)*Math.PI),0,1),night=1-daylight;const factor=weather==='Rain'?.62:weather==='Cloudy'?.78:1;const dim=exhausted?.38:1;const a=(.16+daylight*.82*factor+night*.12)*dim,s=(.08+daylight*1.55)*factor*dim;if(ambient.current)ambient.current.intensity=THREE.MathUtils.damp(ambient.current.intensity,a,1.8,Math.min(dt,.05));if(sun.current){sun.current.intensity=THREE.MathUtils.damp(sun.current.intensity,s,1.4,Math.min(dt,.05));const angle=((hour-6)/24)*Math.PI*2;sun.current.position.set(Math.cos(angle)*14,Math.max(1.2,Math.sin(angle)*18),4);targetColor.current.set(darknessEvent?'#ff3a3a':exhausted?'#4a4a62':weather==='Rain'?'#9fb8d0':daylight>.35?'#fff0cc':'#91a9e8');sun.current.color.lerp(targetColor.current,1-Math.exp(-Math.min(dt,.05)*1.2));}if(fill.current)fill.current.intensity=THREE.MathUtils.damp(fill.current.intensity,.12+night*.24,1.5,Math.min(dt,.05));});
   return <><ambientLight ref={ambient} intensity={.65}/><directionalLight ref={sun} position={[8,14,4]} intensity={1.2} color="#fff0cc"/><hemisphereLight ref={fill} args={['#a8c9ff','#24354a',.2]}/></>;
 }
 function RainParticles({ position }) {
@@ -32,12 +33,24 @@ function RainParticles({ position }) {
   return <points ref={points} position={[Number(position?.x)||0,0,Number(position?.z)||0]} frustumCulled><bufferGeometry><bufferAttribute attach="attributes-position" count={180} array={particles} itemSize={3}/></bufferGeometry><pointsMaterial color="#b9dcff" size={.045} transparent opacity={.62} depthWrite={false} sizeAttenuation/></points>;
 }
 export default function WorldManager({ position={x:0,z:0}, season='Summer', worldHour=9, weather='Clear', attackToken=0 }) {
+  const [stage23,setStage23] = useState({energy:100,darknessEvent:false});
+  useEffect(()=>{const update=(event)=>{const player=event?.detail?.player||{};const energy=Number(player.battery_energy??player.energy??100);const worldEvent=player.worldEvent||{};setStage23({energy, darknessEvent:Boolean(worldEvent.active&&worldEvent.type==='darkness')});};if(typeof window!=='undefined'){window.addEventListener('whiskay:player-update',update);return()=>window.removeEventListener('whiskay:player-update',update);}},[]);
+  const exhausted=stage23.energy<15;
   const cx=Math.floor((Number(position.x)||0)/CHUNK_SIZE),cz=Math.floor((Number(position.z)||0)/CHUNK_SIZE);
   const chunks=useMemo(()=>{const out=[];for(let x=cx-RADIUS;x<=cx+RADIUS;x++)for(let z=cz-RADIUS;z<=cz+RADIUS;z++)out.push([x,z]);return out;},[cx,cz]);
   const resources=useMemo(()=>chunks.flatMap(([x,z])=>resourceSpecs(x,z)),[chunks]);
   const [target,setTarget]=useState({id:'',token:0});
   useEffect(()=>{if(!attackToken)return;let nearest=null,dist=3.4;for(const r of resources){const d=Math.hypot(position.x-r.x,position.z-r.z);if(d<dist){nearest=r;dist=d;}}setTarget({id:nearest?.id||'',token:attackToken});if(!nearest&&typeof window!=='undefined')window.dispatchEvent(new CustomEvent('whiskay:resource-message',{detail:{message:'Dekati pohon atau mineral (maks. 3.4 unit) lalu tekan ATK untuk menambang.'}}));},[attackToken,position.x,position.z,resources]);
-  return <group><DayNightLighting worldHour={worldHour} weather={weather}/>{chunks.map(([x,z])=><WorldChunk key={`${x}:${z}`} cx={x} cz={z} season={season}/>)}{resources.map(r=><DestructibleObject key={r.id} {...r} position={[r.x,0,r.z]} hitToken={target.token} targeted={target.id===r.id}/>)}{weather==='Rain'&&<RainParticles position={position}/>}</group>;
+  return <group><WorldMoodBackground color={stage23.darknessEvent?'#8f1111':exhausted?'#181822':'#87a9c9'}/><DayNightLighting worldHour={worldHour} weather={weather} exhausted={exhausted} darknessEvent={stage23.darknessEvent}/>{chunks.map(([x,z])=><WorldChunk key={`${x}:${z}`} cx={x} cz={z} season={season}/>)}{resources.map(r=><DestructibleObject key={r.id} {...r} position={[r.x,0,r.z]} hitToken={target.token} targeted={target.id===r.id}/>)}{weather==='Rain'&&<RainParticles position={position}/>}</group>;
 }
 
 export function getWorldResourceMarkers(position = {x:0,z:0}) { const cx=Math.floor((Number(position.x)||0)/CHUNK_SIZE), cz=Math.floor((Number(position.z)||0)/CHUNK_SIZE); const out=[]; for(let x=cx-RADIUS;x<=cx+RADIUS;x++) for(let z=cz-RADIUS;z<=cz+RADIUS;z++) out.push(...resourceSpecs(x,z)); return out; }
+
+
+// Stage 23 visual state bridge: subscribe from the owning scene component and
+// apply these values to scene lighting/skybox; safe for pages that mount it client-side.
+export function getStage23WorldMood(player = {}) {
+  const energy = Number(player.battery_energy ?? player.energy ?? 100);
+  const event = player.worldEvent || {};
+  return { exhausted: energy < 15, darkness: energy < 15, darknessEvent: Boolean(event.active && event.type === 'darkness'), skyTint: event.active && event.type === 'darkness' ? '#8f1111' : (energy < 15 ? '#24242d' : null) };
+}

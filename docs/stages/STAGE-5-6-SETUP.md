@@ -20,3 +20,9 @@ Commands use the bot's configured prefix (examples: `!daily`, `!buy potion`). Th
 
 ## Important state note
 Daily/shop transactions modify the website's `player_snapshots` record. The bot's older local RPG JSON files are still a separate gameplay store; they are not automatically mutated by these remote commands. To make all local gameplay commands and remote purchases share one authoritative balance, the next integration step is to migrate gameplay reads/writes to the same backend or add a carefully designed reconciliation/ledger. Until then, do not assume a remote reward updates the local-only RPG balance.
+
+---
+
+## Documentation continuity note (2026-10-29)
+
+This file is retained as part of the historical implementation record. For the current cross-stage status, recent fixes, test commands and known limitations, see [Master Stage Archive](../STAGE-1-22-MASTER-ARCHIVE.md) and the [documentation index](../README.md). Newer behavior supersedes earlier implementation details only where the dated update explicitly says so; previous decisions and history are not deleted.

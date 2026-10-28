@@ -14,3 +14,9 @@ Bot plugin: `src/plugins/games/rpg-guild.js`. Website route: `app/api/player/gui
 
 ## Verify
 Run `npm run verify:stage16` and `npm run build` in the web project. Run `npm test` in the bot project. Integration tests against Supabase and WhatsApp are still required before production.
+
+---
+
+## Documentation continuity note (2026-10-29)
+
+This file is retained as part of the historical implementation record. For the current cross-stage status, recent fixes, test commands and known limitations, see [Master Stage Archive](STAGE-1-22-MASTER-ARCHIVE.md) and the [documentation index](README.md). Newer behavior supersedes earlier implementation details only where the dated update explicitly says so; previous decisions and history are not deleted.

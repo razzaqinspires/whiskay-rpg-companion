@@ -22,3 +22,9 @@ File `.env` lokal tidak disertakan dalam ZIP ini untuk mencegah kebocoran secret
 Next.js App Router is the sole owner of API routes. The legacy root-level `api/*.js` serverless functions were removed because they duplicated `app/api/*/route.js` endpoints and caused Vercel to attempt to create the same `/api/floors` function twice. Keep `app/api/floors/route.js`, `app/api/player/route.js`, and `app/api/sync/route.js` as the only owners. Each route explicitly uses `dynamic = 'force-dynamic'` (floors also sets `revalidate = 0`) so Vercel does not create a competing static route output.
 
 The sync endpoint accepts `BOT_SYNC_TOKEN` or `DUNGEON_SYNC_TOKEN` for backward compatibility with WhiskayBot. Prefer setting one identical secret on both deployments.
+
+---
+
+## Documentation continuity note (2026-10-29)
+
+This file is retained as part of the historical implementation record. For the current cross-stage status, recent fixes, test commands and known limitations, see [Master Stage Archive](../STAGE-1-22-MASTER-ARCHIVE.md) and the [documentation index](../README.md). Newer behavior supersedes earlier implementation details only where the dated update explicitly says so; previous decisions and history are not deleted.

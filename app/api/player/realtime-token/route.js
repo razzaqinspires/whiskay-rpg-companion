@@ -1,3 +1,4 @@
+import { verifyGameAccess } from '../../../../lib/accessToken.js';
 import { createHmac } from 'node:crypto';
 export const dynamic = 'force-dynamic';
 const json=(body,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'no-store, max-age=0',Pragma:'no-cache'}});
@@ -5,7 +6,9 @@ const b64url=value=>Buffer.from(value).toString('base64url');
 export async function POST(request){
  let body; try{body=await request.json();}catch{return json({error:'invalid_json'},400);}
  const playerId=typeof body?.playerId==='string'?body.playerId.trim():'';
+ const accessToken=typeof body?.accessToken==='string'?body.accessToken:'';
  if(!/^[a-f0-9]{32}$/i.test(playerId)) return json({error:'invalid_player_id'},400);
+ if(!verifyGameAccess(accessToken,playerId)) return json({error:'invalid_access'},401);
  const secret=process.env.SUPABASE_JWT_SECRET||'';
  if(!secret) return json({error:'realtime_not_configured'},503);
  const now=Math.floor(Date.now()/1000);

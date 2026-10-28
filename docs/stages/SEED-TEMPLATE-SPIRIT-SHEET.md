@@ -44,3 +44,9 @@ Recommended production atlas: 4 rows × 4 columns, transparent PNG/WebP, consist
 - `win`: two-note victory cue
 
 The present implementation synthesizes these cues through Web Audio so no third-party sound assets are required; replace with licensed spatial audio assets for final release.
+
+---
+
+## Documentation continuity note (2026-10-29)
+
+This file is retained as part of the historical implementation record. For the current cross-stage status, recent fixes, test commands and known limitations, see [Master Stage Archive](../STAGE-1-22-MASTER-ARCHIVE.md) and the [documentation index](../README.md). Newer behavior supersedes earlier implementation details only where the dated update explicitly says so; previous decisions and history are not deleted.

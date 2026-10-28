@@ -10,3 +10,9 @@ Date: 2026-10-27
 
 ## Deployment and checks
 Run `npm ci`, then apply the updated `schema.sql` in the Supabase SQL Editor so `buy_player_item` accepts `pet-food`. Next run `npm run verify:stage20` and `npm run build`. Stage 1–18 and Stage 20 source verification scripts passed in this environment, and JSX/route syntax was parsed; a full Next.js build and live Supabase integration were not run here.
+
+---
+
+## Documentation continuity note (2026-10-29)
+
+This file is retained as part of the historical implementation record. For the current cross-stage status, recent fixes, test commands and known limitations, see [Master Stage Archive](STAGE-1-22-MASTER-ARCHIVE.md) and the [documentation index](README.md). Newer behavior supersedes earlier implementation details only where the dated update explicitly says so; previous decisions and history are not deleted.

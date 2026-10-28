@@ -1,0 +1,4 @@
+'use client';
+export default function RPGLoadingScreen({ label = 'Menyelaraskan dunia...', progress }) {
+  return <div role="status" aria-live="polite" className="fixed inset-0 z-[120] grid place-items-center bg-slate-950 text-amber-100"><div className="w-[min(86vw,420px)] rounded-2xl border border-amber-300/30 bg-slate-900/90 p-6 text-center shadow-2xl"><div className="mb-3 text-4xl">✦</div><h2 className="text-xl font-bold tracking-wide">WHISKAY REALMS</h2><p className="mt-2 text-sm text-slate-300">{label}</p><div className="mt-5 h-2 overflow-hidden rounded-full bg-slate-700"><div className="h-full rounded-full bg-gradient-to-r from-cyan-400 via-amber-300 to-fuchsia-400" style={{ width: `${Math.max(0, Math.min(100, Number(progress) || 18)}%` }} /></div><p className="mt-2 text-xs text-slate-500">Memuat aset secara bertahap</p></div></div>;
+}

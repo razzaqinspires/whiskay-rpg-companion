@@ -6,25 +6,24 @@ export default function PlayerRealtimeSync() {
   const [message, setMessage] = useState('');
   const timerRef = useRef(null);
   useEffect(() => {
-    const queryPlayer = new URLSearchParams(window.location.search).get('player') || '';
-    if (queryPlayer && /^[a-f0-9]{32}$/i.test(queryPlayer)) { try { sessionStorage.setItem('whiskay-player-id', queryPlayer); } catch {} }
-    let playerId = queryPlayer;
-    if (!playerId) { try { playerId = sessionStorage.getItem('whiskay-player-id') || ''; } catch {} }
+    const params = new URLSearchParams(window.location.search);
+    const playerId = params.get('player') || '';
+    const accessToken = params.get('access') || '';
     const projectUrl = String(process.env.NEXT_PUBLIC_SUPABASE_URL || '').replace(/\/+$/, '');
     const anonKey = String(process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '');
-    if (!/^[a-f0-9]{32}$/i.test(playerId) || !projectUrl || !anonKey) return;
+    if (!/^[a-f0-9]{32}$/i.test(playerId) || !accessToken || !projectUrl || !anonKey) return;
     let disposed = false, socket, heartbeat, reconnect, ref = 0, joinRef = '1', lastPayload = null;
     const connect = async () => {
       try {
         if (!lastPayload) {
-          const initialResponse = await fetch('/api/player?player=' + encodeURIComponent(playerId), { cache: 'no-store' });
+          const initialResponse = await fetch('/api/player?player=' + encodeURIComponent(playerId) + '&accessToken=' + encodeURIComponent(accessToken), { cache: 'no-store' });
           const initialData = await initialResponse.json().catch(() => ({}));
           if (initialResponse.ok && initialData?.player) {
             lastPayload = JSON.stringify(initialData.player);
             emit('whiskay:player-update', { player: initialData.player, updatedAt: initialData.updatedAt, initial: true });
           }
         }
-        const tokenResponse = await fetch('/api/player/realtime-token', { method: 'POST', headers: {'content-type':'application/json'}, body: JSON.stringify({playerId}), cache:'no-store' });
+        const tokenResponse = await fetch('/api/player/realtime-token', { method: 'POST', headers: {'content-type':'application/json'}, body: JSON.stringify({playerId, accessToken}), cache:'no-store' });
         const tokenData = await tokenResponse.json().catch(()=>({}));
         if (!tokenResponse.ok || !tokenData.token || disposed) { setMessage('Realtime belum dikonfigurasi'); return; }
         const wsUrl = new URL(projectUrl.replace(/^https:/,'wss:').replace(/^http:/,'ws:') + '/realtime/v1/websocket');

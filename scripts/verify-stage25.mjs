@@ -1,0 +1,13 @@
+import fs from 'node:fs';
+import assert from 'node:assert/strict';
+const layout = fs.readFileSync('app/layout.jsx', 'utf8');
+const schema = fs.readFileSync('schema.sql', 'utf8');
+const chart = fs.readFileSync('components/stage25/EconomyMarketChart.jsx', 'utf8');
+assert.match(layout, /applicationName/);
+assert.match(layout, /openGraph/);
+assert.match(schema, /world_economy_ticks/);
+assert.match(schema, /world_external_events/);
+assert.match(schema, /enable row level security/i);
+assert.match(chart, /setInterval\(load, 30_000\)/);
+assert.match(chart, /Data pasar belum tersedia/);
+console.log('Stage 25 verification: 6/6 checks passed');

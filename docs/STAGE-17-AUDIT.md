@@ -14,3 +14,9 @@ Set `BOT_SYNC_TOKEN` and/or `DUNGEON_SYNC_TOKEN` on the website server to exactl
 - Access links are bearer credentials and expire after 15 minutes; users should not share them. The game currently verifies access at page render. For production-grade enforcement, also validate the signed token on every state-mutating API and move persistent gameplay mutations into server-side RPCs.
 - This source package was statically checked; a full Next.js production build and live Supabase/WhatsApp integration test require installing dependencies and using deployment credentials.
 - Combat remains partly client-simulated; the stage does not claim server-authoritative PvP/PvE combat.
+
+---
+
+## Documentation continuity note (2026-10-29)
+
+This file is retained as part of the historical implementation record. For the current cross-stage status, recent fixes, test commands and known limitations, see [Master Stage Archive](STAGE-1-22-MASTER-ARCHIVE.md) and the [documentation index](README.md). Newer behavior supersedes earlier implementation details only where the dated update explicitly says so; previous decisions and history are not deleted.

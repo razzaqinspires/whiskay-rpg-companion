@@ -385,3 +385,79 @@ revoke all on function public.auction_buy_item(text,text) from public,anon,authe
 grant execute on function public.auction_sell_item(text,text,bigint) to service_role;
 grant execute on function public.auction_list_items(text) to service_role;
 grant execute on function public.auction_buy_item(text,text) to service_role;
+
+
+-- Stage 23: economy/charging mirror fields. The JSON snapshot remains compatible;
+-- these columns support indexed queries and future atomic RPC transactions.
+CREATE TABLE IF NOT EXISTS public.players (
+  player_id TEXT PRIMARY KEY,
+  mod_coins BIGINT NOT NULL DEFAULT 0 CHECK (mod_coins >= 0),
+  max_battery_capacity INTEGER NOT NULL DEFAULT 100 CHECK (max_battery_capacity >= 100),
+  current_volt_speed SMALLINT NOT NULL DEFAULT 5 CHECK (current_volt_speed BETWEEN 5 AND 33),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+ALTER TABLE public.players ADD COLUMN IF NOT EXISTS mod_coins BIGINT NOT NULL DEFAULT 0 CHECK (mod_coins >= 0);
+ALTER TABLE public.players ADD COLUMN IF NOT EXISTS max_battery_capacity INTEGER NOT NULL DEFAULT 100 CHECK (max_battery_capacity >= 100);
+ALTER TABLE public.players ADD COLUMN IF NOT EXISTS current_volt_speed SMALLINT NOT NULL DEFAULT 5 CHECK (current_volt_speed BETWEEN 5 AND 33);
+
+-- Stage 24: durable world coordinates and deterministic seed. Kept separate from
+-- snapshots so movement writes can be buffered and upserted in batches.
+create table if not exists public.player_world_state (
+  player_id text primary key references public.player_snapshots(player_id) on delete cascade,
+  current_world_seed bigint not null default 1999,
+  pos_x double precision not null default 0,
+  pos_y double precision not null default 0,
+  pos_z double precision not null default 0,
+  updated_at timestamptz not null default now(),
+  constraint player_world_state_player_id_format check (player_id ~ '^[a-fA-F0-9]{32}$'),
+  constraint player_world_state_coordinates_finite check (pos_x between -100000 and 100000 and pos_y between -10000 and 10000 and pos_z between -100000 and 100000)
+);
+alter table public.player_world_state enable row level security;
+-- Service-role only: do not create public write policies for movement/combat.
+
+-- Stage 25: authenticated server-owned event and market records.
+create table if not exists public.world_economy_ticks (
+  id bigint generated always as identity primary key,
+  mod_coin_volume numeric(20,2) not null default 0 check (mod_coin_volume >= 0),
+  market_index numeric(12,4) not null default 1 check (market_index > 0),
+  recorded_at timestamptz not null default now()
+);
+create index if not exists world_economy_ticks_recorded_at_idx on public.world_economy_ticks(recorded_at desc);
+alter table public.world_economy_ticks enable row level security;
+-- No anon/authenticated write policies. Insert only from a trusted server/service role.
+
+create table if not exists public.world_external_events (
+  event_id text primary key,
+  event_type text not null check (event_type in ('menfess_notice','github_push','pet_growth','world_weather','combat_log')),
+  player_id text,
+  payload jsonb not null default '{}'::jsonb,
+  created_at timestamptz not null default now(),
+  expires_at timestamptz
+);
+create index if not exists world_external_events_created_at_idx on public.world_external_events(created_at desc);
+alter table public.world_external_events enable row level security;
+-- Keep these records server-only until a player-scoped read policy is explicitly designed.
+
+-- Stage 27: durable event inbox/outbox. Apply via reviewed migration before enabling API traffic.
+create table if not exists public.event_outbox (
+  event_id text primary key,
+  event_type text not null check (event_type in (
+    'player.snapshot.updated', 'player.position.updated', 'player.inventory.updated',
+    'player.combat.logged', 'world.event.updated', 'economy.transaction.created',
+    'pet.stage.updated', 'menfess.notification.created'
+  )),
+  payload jsonb not null default '{}'::jsonb check (jsonb_typeof(payload) = 'object'),
+  occurred_at timestamptz not null,
+  status text not null default 'pending' check (status in ('pending', 'processing', 'delivered', 'dead')),
+  attempts integer not null default 0 check (attempts >= 0),
+  available_at timestamptz not null default now(),
+  locked_at timestamptz,
+  delivered_at timestamptz,
+  last_error text,
+  created_at timestamptz not null default now()
+);
+create index if not exists event_outbox_pending_idx on public.event_outbox (available_at, created_at) where status = 'pending';
+create index if not exists event_outbox_type_created_idx on public.event_outbox (event_type, created_at desc);
+alter table public.event_outbox enable row level security;
+-- No public policies: only trusted server code using the service-role key may access this table.

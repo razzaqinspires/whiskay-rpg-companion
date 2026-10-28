@@ -1,0 +1,10 @@
+import assert from 'node:assert/strict';
+import { DURABLE_EVENT_TYPES, validateDurableEvent } from '../lib/stage27/durable-event-contract.mjs';
+const now=Date.now();const good={eventId:'event_00000001',type:'world.event.updated',timestamp:now,payload:{weather:'rain'}};
+assert.equal(validateDurableEvent(good,now).ok,true);
+assert.equal(validateDurableEvent({...good,type:'admin.exec'},now).error,'event_type_not_allowed');
+assert.equal(validateDurableEvent({...good,timestamp:now-999999},now).error,'invalid_timestamp');
+assert.equal(validateDurableEvent({...good,payload:[]},now).error,'invalid_payload');
+assert.equal(validateDurableEvent({...good,payload:{data:'x'.repeat(65000)}},now).error,'payload_too_large');
+assert.equal(DURABLE_EVENT_TYPES.length,8);
+console.log('Stage 27 durable event contract: 6/6 checks passed');

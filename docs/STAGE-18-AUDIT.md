@@ -11,3 +11,9 @@ Apply the Stage 18 block appended to `schema.sql` in the intended Supabase proje
 
 ## Limitations
 Mount and weather attrition are client-side prototype effects, not cheat-proof authoritative mechanics. The mount indicator does not replace the hero with a full riding model. Live Supabase and bot webhook connectivity, mobile performance, and production Next.js build were not verified in this environment.
+
+---
+
+## Documentation continuity note (2026-10-29)
+
+This file is retained as part of the historical implementation record. For the current cross-stage status, recent fixes, test commands and known limitations, see [Master Stage Archive](STAGE-1-22-MASTER-ARCHIVE.md) and the [documentation index](README.md). Newer behavior supersedes earlier implementation details only where the dated update explicitly says so; previous decisions and history are not deleted.

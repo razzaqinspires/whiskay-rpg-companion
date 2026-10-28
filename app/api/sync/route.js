@@ -44,7 +44,13 @@ export async function POST(request) {
     const rows = await read.json();
     const existing = rows[0]?.payload && typeof rows[0].payload === 'object' &&
       !Array.isArray(rows[0].payload) ? rows[0].payload : {};
-    const merged = { ...existing, ...payload };
+    const allowedEconomy = {};
+    if (payload.mod_coins !== undefined && Number.isFinite(Number(payload.mod_coins)) && Number(payload.mod_coins) >= 0) allowedEconomy.mod_coins = Math.floor(Number(payload.mod_coins));
+    if (payload.max_battery_capacity !== undefined && Number.isFinite(Number(payload.max_battery_capacity))) allowedEconomy.max_battery_capacity = Math.max(100, Math.min(10000, Math.floor(Number(payload.max_battery_capacity))));
+    if (payload.current_volt_speed !== undefined && Number.isFinite(Number(payload.current_volt_speed))) allowedEconomy.current_volt_speed = Math.max(5, Math.min(33, Math.floor(Number(payload.current_volt_speed))));
+    if (payload.battery_energy !== undefined && Number.isFinite(Number(payload.battery_energy))) allowedEconomy.battery_energy = Math.max(0, Math.min(10000, Number(payload.battery_energy)));
+    if (payload.worldEvent !== undefined && typeof payload.worldEvent === 'object' && payload.worldEvent !== null) allowedEconomy.worldEvent = { type: String(payload.worldEvent.type || '').slice(0, 40), active: Boolean(payload.worldEvent.active), updatedAt: new Date().toISOString() };
+    const merged = { ...existing, ...payload, ...allowedEconomy };
     // Bot reads the current snapshot before player actions. Merge the submitted player
     // state so bot-originated XP/level/gold changes are visible to the website as well.
     // This endpoint is not a server-authoritative transaction; race-safe economy changes require dedicated Supabase RPCs.

@@ -17,3 +17,9 @@ The current player ID scheme is `sha256(chat + '|' + sender).slice(0,32)`. Trade
 
 ## Tests
 Bot: `npm test`. Web: `npm run verify:stage9-10`, then `npm run build`. The static verifier is not a substitute for running the SQL in a staging Supabase project and testing two real WhatsApp accounts.
+
+---
+
+## Documentation continuity note (2026-10-29)
+
+This file is retained as part of the historical implementation record. For the current cross-stage status, recent fixes, test commands and known limitations, see [Master Stage Archive](../STAGE-1-22-MASTER-ARCHIVE.md) and the [documentation index](../README.md). Newer behavior supersedes earlier implementation details only where the dated update explicitly says so; previous decisions and history are not deleted.

@@ -1,0 +1,12 @@
+import { readFileSync, existsSync } from 'node:fs';
+import assert from 'node:assert/strict';
+const read = p => readFileSync(new URL(`../${p}`, import.meta.url), 'utf8');
+assert.ok(existsSync(new URL('../lib/world/WorldGen.js', import.meta.url)));
+const gen = read('lib/world/WorldGen.js');
+for (const token of ['generateWorld','normalizeSeed','mulberry32']) assert.ok(gen.includes(token), `WorldGen missing ${token}`);
+assert.ok(read('components/fx/CombatFX.jsx').includes('whiskay:combat-fx'));
+assert.ok(read('components/fx/RPGLoadingScreen.jsx').includes('WHISKAY REALMS'));
+assert.ok(read('schema.sql').includes('player_world_state'));
+for (const field of ['current_world_seed','pos_x','pos_y','pos_z']) assert.ok(read('schema.sql').includes(field));
+assert.ok(read('public/assets/unity_pack/README.md').includes('licensed'));
+console.log('Stage 24 structural checks: 8/8 passed');

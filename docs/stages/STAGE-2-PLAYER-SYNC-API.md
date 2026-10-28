@@ -36,3 +36,9 @@ the snapshot endpoint.
 
 The older `/api/player/sync` route was removed because it accepted a different identity format
 (phone/JID) and was incompatible with the established opaque-ID `/api/sync` contract.
+
+---
+
+## Documentation continuity note (2026-10-29)
+
+This file is retained as part of the historical implementation record. For the current cross-stage status, recent fixes, test commands and known limitations, see [Master Stage Archive](../STAGE-1-22-MASTER-ARCHIVE.md) and the [documentation index](../README.md). Newer behavior supersedes earlier implementation details only where the dated update explicitly says so; previous decisions and history are not deleted.
