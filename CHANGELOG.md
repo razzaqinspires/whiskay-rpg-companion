@@ -1,3 +1,9 @@
+## [2.10.0] - 2026-10-29
+
+### Added
+- Stage 30: context-aware recommendation filtering / game request input policy.
+- Stage 30 focused verification script and documentation.
+
 
 ## [2.6.0] — Stage 26
 - Added allow-listed Bot/Web event envelope validation.
@@ -41,3 +47,14 @@
 - Added event validation/idempotency groundwork and Stage 28 verification.
 - Expanded README and stage documentation while preserving prior history.
 - Production multi-instance transaction guarantees remain dependent on database integration.
+
+## [2.9.0] - 2026-10-29 — Stage 29
+- Simplified official portal navigation to Open World and Inventory as the primary game areas.
+- Updated copy to describe dungeon access as integrated with the open-world journey, not a separate top-level game tab.
+- Added verification for route access gates and landing-page navigation.
+
+## 2.11.0 — Stage 31 (2026-10-29)
+- Applied bounded-integer validation to RPG snapshot stats accepted by `/api/player/update`.
+- Added finite/range validation for optional checkpoint and position coordinates.
+- Added Stage 31 static regression checks for signed player access and rejected out-of-range/fractional values.
+- This is input validation, not a claim that the client is fully server-authoritative or cheat-proof.

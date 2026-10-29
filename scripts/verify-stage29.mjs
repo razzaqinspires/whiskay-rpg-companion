@@ -1,0 +1,12 @@
+import { readFile } from 'node:fs/promises';
+import assert from 'node:assert/strict';
+const home = await readFile(new URL('../app/page.jsx', import.meta.url), 'utf8');
+const adventure = await readFile(new URL('../app/adventure/page.jsx', import.meta.url), 'utf8');
+const inventory = await readFile(new URL('../app/inventory/page.jsx', import.meta.url), 'utf8');
+assert.match(home, /Open World/);
+assert.match(home, /Inventory/);
+assert.match(home, /bukan tab game terpisah/);
+assert.doesNotMatch(home, /href="#dungeonia"/);
+assert.match(adventure, /verifyGameAccess\(access, player\)/);
+assert.match(inventory, /verifyGameAccess\(accessToken, playerId\)/);
+console.log('Stage 29 web verification passed: open-world navigation, integrated dungeon copy, and bot-issued access gates.');

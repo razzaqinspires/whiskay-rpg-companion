@@ -1,0 +1,16 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { isValidPlayerId, parseBoundedInteger, parseFiniteCoordinate } from '../lib/stage30/access-policy.mjs';
+assert.equal(isValidPlayerId('0123456789abcdef0123456789abcdef'), true);
+assert.equal(isValidPlayerId('123@g.us'), false);
+assert.equal(isValidPlayerId('../etc/passwd'), false);
+assert.equal(parseBoundedInteger('25', { min: 1, max: 100 }), 25);
+assert.equal(parseBoundedInteger('1.5'), null);
+assert.equal(parseBoundedInteger('-1'), null);
+assert.equal(parseFiniteCoordinate('12.5'), 12.5);
+assert.equal(parseFiniteCoordinate('Infinity'), null);
+assert.equal(parseFiniteCoordinate('100001'), null);
+const access = await readFile(new URL('../lib/accessToken.js', import.meta.url), 'utf8');
+assert.match(access, /timingSafeEqual/);
+assert.match(access, /data\.exp/);
+console.log('Stage 30 web verification passed: player IDs, bounded integers, coordinates and signed-access safeguards.');

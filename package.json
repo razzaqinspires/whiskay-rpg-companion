@@ -1,6 +1,6 @@
 {
   "name": "whiskay-rpg-companion",
-  "version": "2.8.0",
+  "version": "2.11.0",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -25,13 +25,16 @@
     "verify:tunnel-config": "node scripts/verify-tunnel-config.mjs",
     "verify:stage22": "node scripts/verify-stage22.mjs",
     "verify:whatsapp-inventory": "node scripts/verify-whatsapp-inventory.mjs",
-    "verify:all": "npm run verify:routes && npm run verify:stage1 && npm run verify:stage4 && npm run verify:stage5 && npm run verify:stage8 && npm run verify:stage9-10 && npm run verify:stage11 && npm run verify:stage12-13 && npm run verify:stage14 && npm run verify:stage15 && npm run verify:stage16 && npm run verify:stage17 && npm run verify:stage18 && npm run verify:stage20 && npm run verify:stage22 && npm run verify:whatsapp-inventory && npm run verify:stage23 && npm run verify:stage24 && npm run verify:stage25 && npm run verify:stage26 && npm run verify:stage27 && npm run verify:stage28",
+    "verify:all": "npm run verify:routes && npm run verify:stage1 && npm run verify:stage4 && npm run verify:stage5 && npm run verify:stage8 && npm run verify:stage9-10 && npm run verify:stage11 && npm run verify:stage12-13 && npm run verify:stage14 && npm run verify:stage15 && npm run verify:stage16 && npm run verify:stage17 && npm run verify:stage18 && npm run verify:stage20 && npm run verify:stage22 && npm run verify:whatsapp-inventory && npm run verify:stage23 && npm run verify:stage24 && npm run verify:stage25 && npm run verify:stage26 && npm run verify:stage27 && npm run verify:stage28 && npm run verify:stage29 && npm run verify:stage30 && npm run verify:stage31",
     "verify:stage23": "node scripts/verify-stage23.mjs",
     "verify:stage24": "node scripts/verify-stage24.mjs",
     "verify:stage25": "node scripts/verify-stage25.mjs",
     "verify:stage26": "node scripts/verify-stage26.mjs",
     "verify:stage27": "node scripts/verify-stage27.mjs",
-    "verify:stage28": "node scripts/verify-stage28.mjs"
+    "verify:stage28": "node scripts/verify-stage28.mjs",
+    "verify:stage29": "node scripts/verify-stage29.mjs",
+    "verify:stage30": "node scripts/verify-stage30.mjs",
+    "verify:stage31": "node scripts/verify-stage31.mjs"
   },
   "dependencies": {
     "@react-three/drei": "^9.122.0",

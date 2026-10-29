@@ -1,4 +1,5 @@
 import { verifyGameAccess } from '../../../../lib/accessToken.js';
+import { parseBoundedInteger, parseFiniteCoordinate } from '../../../../lib/stage30/access-policy.mjs';
 export const dynamic='force-dynamic'; export const revalidate=0;
 const json=(body,status=200)=>Response.json(body,{status,headers:{'Cache-Control':'no-store, max-age=0'}});
 export async function POST(request){
@@ -8,7 +9,9 @@ export async function POST(request){
  if(!payload||typeof payload!=='object'||Array.isArray(payload))return json({error:'invalid_payload'},400);
  const allowed=['name','level','xp','hp','maxHp','gold','gems','spiritShards','weapon','weaponPower','defense','nextXp','potions','floor','wins','losses','inventory','materials','checkpoint','position','completedFloors','unlockedFloor','pet'];
  const clean={};for(const key of allowed){if(payload[key]!==undefined)clean[key]=payload[key]}
- for(const key of ['level','xp','hp','maxHp','gold','gems','spiritShards','weaponPower','potions','floor','wins','losses'])if(clean[key]!==undefined&&(!Number.isFinite(Number(clean[key]))||Number(clean[key])<0))return json({error:'invalid_stat'},400);
+ const statBounds={level:[1,10000],xp:[0,1000000000],hp:[0,100000],maxHp:[1,100000],gold:[0,1000000000],gems:[0,1000000000],spiritShards:[0,1000000000],weaponPower:[0,1000000],potions:[0,100000],floor:[1,100],wins:[0,10000000],losses:[0,10000000],nextXp:[0,1000000000]};
+ for(const [key,[min,max]] of Object.entries(statBounds))if(clean[key]!==undefined){const parsed=parseBoundedInteger(clean[key],{min,max});if(parsed===null)return json({error:'invalid_stat',field:key,min,max},400);clean[key]=parsed;}
+ for(const key of ['checkpoint','position'])if(clean[key]!==undefined){const point=clean[key];if(!point||typeof point!=='object'||Array.isArray(point))return json({error:'invalid_position',field:key},400);for(const axis of ['x','y','z'])if(point[axis]!==undefined){const coordinate=parseFiniteCoordinate(point[axis],{min:-100000,max:100000});if(coordinate===null)return json({error:'invalid_coordinate',field:`${key}.${axis}`},400);point[axis]=coordinate;}}
  if(clean.inventory!==undefined&&(!Array.isArray(clean.inventory)||clean.inventory.length>200))return json({error:'invalid_inventory'},400);
  if(clean.completedFloors!==undefined&&(!Array.isArray(clean.completedFloors)||clean.completedFloors.length>100||clean.completedFloors.some(n=>!Number.isInteger(Number(n))||Number(n)<1||Number(n)>100)))return json({error:'invalid_completed_floors'},400);
  if(clean.unlockedFloor!==undefined&&(!Number.isInteger(Number(clean.unlockedFloor))||Number(clean.unlockedFloor)<1||Number(clean.unlockedFloor)>100))return json({error:'invalid_unlocked_floor'},400);

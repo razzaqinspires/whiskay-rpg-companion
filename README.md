@@ -353,3 +353,28 @@ Sinkronisasi Companion mempertahankan kolom `mod_coins`, `max_battery_capacity`,
 - Verification: `npm run verify:stage28` and `npm run verify:all`.
 - Archive policy: all prior stage documentation is retained; this section extends rather than replaces the history.
 - Production caveat: multi-instance deduplication and atomic business transactions require database-backed implementation and integration testing.
+
+## Stage 29 — Official portal and connected world (2026-10-29)
+
+The official landing navigation now presents **Open World** and **Inventory** as the two primary game areas. Dungeon is described as part of the same exploration journey rather than a separate top-level game tab. Adventure and Inventory routes continue to require a valid signed access token issued through the WhatsApp checkpoint flow. See [`docs/STAGE-29.md`](docs/STAGE-29.md) and [`docs/TEST-REPORT-STAGE-29.md`](docs/TEST-REPORT-STAGE-29.md).
+
+This portal/navigation change does not by itself prove that every dungeon state or combat subsystem has been merged into a single persistent world scene; that still requires deployed end-to-end testing.
+
+
+## Stage 30 — Game Request Input Policy (2026-10-29)
+
+- Version: 2.10.0.
+- Stage specification: [`docs/STAGE-30.md`](docs/STAGE-30.md).
+- Added bounded input/recommendation policy helpers and focused Stage 30 verification.
+- Run `npm run verify:stage30` or `npm run verify:all`.
+- The checks are local/static tests; they do not replace live WhatsApp, database, or deployed end-to-end verification.
+
+
+## Stage 31 — RPG Input Bounds & Work Memory
+
+- Web version: `2.11.0`. Detail Stage 31: [`docs/STAGE-31.md`](docs/STAGE-31.md).
+- `/api/player/update` kini memvalidasi stat sebagai safe integer dengan batas per field dan memvalidasi `checkpoint`/`position` sebagai koordinat finite dalam ±100.000.
+- Ini mengurangi payload rusak, tetapi bukan bukti bahwa ekonomi game sepenuhnya server-authoritative; perhitungan reward harus dipindah ke RPC/transaksi server sebelum dianggap anti-cheat.
+- QA: `npm run verify:stage31` atau `npm run verify:all`. Laporan: [`TEST-REPORT-STAGE-31.md`](docs/TEST-REPORT-STAGE-31.md). Pengujian lokal tidak membuktikan deployment/Supabase live.
+- Troubleshooting: respons `invalid_stat`, `invalid_position`, atau `invalid_coordinate` berarti payload melebihi batas atau format yang diizinkan; periksa field yang dilaporkan sebelum mengulang save.
+- Memori arahan lintas stage: [`MEMORY.md`](MEMORY.md).

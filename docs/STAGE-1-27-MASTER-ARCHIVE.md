@@ -10,3 +10,7 @@ This index preserves the full historical documentation for Stages 1 through 27. 
 - Stage 27: durable event ingestion, idempotency and retry semantics.
 
 Always update root README, CHANGELOG, docs index, test report and this archive index. Structural tests must not be described as live production integration tests.
+
+## Stage 29 continuity addendum
+- See [`STAGE-29.md`](STAGE-29.md) for the official portal navigation, access boundaries, and known limitations.
+- See [`TEST-REPORT-STAGE-29.md`](TEST-REPORT-STAGE-29.md) for local checks.
