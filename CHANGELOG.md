@@ -1,3 +1,8 @@
+## 2.15.0 — Stage 35 (2026-10-29)
+
+- Added Stage 35 cross-project integration notes and bot feature contracts to the RPG companion documentation.
+- Existing RPG progression and dashboard interfaces remain compatible with the bot XP/leveling contract; no unverified game runtime behavior is claimed.
+
 ## [2.10.0] - 2026-10-29
 
 ### Added
@@ -58,3 +63,20 @@
 - Added finite/range validation for optional checkpoint and position coordinates.
 - Added Stage 31 static regression checks for signed player access and rejected out-of-range/fractional values.
 - This is input validation, not a claim that the client is fully server-authoritative or cheat-proof.
+
+
+## [2.12.0] — Stage 32 — 2026-10-29
+- Added Stage 32 route security regression guard for player identity, bounded stats, coordinates, and no-store responses.
+- No runtime RPG route changed; existing access behavior is covered by static QA.
+
+
+## [2.13.0] — Stage 33 — 2026-10-29
+- Added Stage 33 integration-scope and feature-parity documentation for the Knightbot-MD command audit.
+- No RPG runtime routes or game mechanics were changed because the upstream scope was WhatsApp commands and no concrete website parity gap was established.
+- Added a static Stage 33 repository contract verification script.
+
+
+## [2.14.0] — Stage 34 — 2026-10-29
+- Added bounded world render radius and configurable procedural tree density to WorldManager.
+- Added `whiskay:world-telemetry` event and streaming statistics helper.
+- Added Stage 34 static contract verification and documented asset/performance gaps.

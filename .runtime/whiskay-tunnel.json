@@ -1,0 +1,9 @@
+{
+  "service": "whiskay-world-boss-webhook",
+  "baseUrl": "https://medication-generate-womens-kills.trycloudflare.com",
+  "webhookUrl": "https://medication-generate-womens-kills.trycloudflare.com/webhooks/world-boss",
+  "path": "/webhooks/world-boss",
+  "port": 8787,
+  "generatedAt": "2026-10-30T11:58:01.215Z",
+  "note": "Temporary TryCloudflare URL; do not put secrets in this file. URL may change after restart."
+}

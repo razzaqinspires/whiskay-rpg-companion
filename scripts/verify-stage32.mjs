@@ -1,0 +1,11 @@
+import { readFile } from 'node:fs/promises';
+import assert from 'node:assert/strict';
+const route = await readFile(new URL('../app/api/player/update/route.js', import.meta.url), 'utf8');
+const access = await readFile(new URL('../lib/accessToken.js', import.meta.url), 'utf8');
+assert.match(route, /verifyGameAccess\(token,playerId\)/, 'player update must verify scoped access token');
+assert.match(route, /parseBoundedInteger/, 'player stats must use bounded integer validation');
+assert.match(route, /parseFiniteCoordinate/, 'world coordinates must be finite and bounded');
+assert.match(route, /Cache-Control.*no-store/, 'player response must not be cached');
+assert.match(route, /inventory.*length>200/, 'inventory input must be bounded');
+assert.match(access, /timingSafeEqual|createHmac|createHash/, 'access token implementation must use crypto verification');
+console.log('PASS Stage 32: scoped player access, bounded stats/coordinates, no-store, inventory cap, token crypto');

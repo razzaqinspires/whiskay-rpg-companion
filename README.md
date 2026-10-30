@@ -378,3 +378,39 @@ This portal/navigation change does not by itself prove that every dungeon state 
 - QA: `npm run verify:stage31` atau `npm run verify:all`. Laporan: [`TEST-REPORT-STAGE-31.md`](docs/TEST-REPORT-STAGE-31.md). Pengujian lokal tidak membuktikan deployment/Supabase live.
 - Troubleshooting: respons `invalid_stat`, `invalid_position`, atau `invalid_coordinate` berarti payload melebihi batas atau format yang diizinkan; periksa field yang dilaporkan sebelum mengulang save.
 - Memori arahan lintas stage: [`MEMORY.md`](MEMORY.md).
+
+
+## Stage 32 — Player data and regression guard
+- Runtime gameplay routes were not changed in this stage because the reported regressions are in the bot menu/status/profile and local leveling writer.
+- Added `npm run verify:stage32` to guard the existing player update route: scoped access token, bounded integer stats, finite bounded coordinates, `no-store`, inventory length cap, and cryptographic token verification.
+- Profile/status images are bot-side per-user settings in this stage; this does not claim a new website image database schema.
+- Run `npm run verify:all` before deploying.
+
+- **Stage 32 QA/work record:** [`docs/STAGE-32.md`](docs/STAGE-32.md), [`docs/STAGE-32-250-SUBCATEGORIES.md`](docs/STAGE-32-250-SUBCATEGORIES.md).
+
+
+## Stage 33 — Bot command parity review
+
+- The upstream comparison target is [Knightbot-MD `commands/`](https://github.com/mruniquehacker/Knightbot-MD/tree/main/commands). Stage 33 adds bot-side utilities only; no website gameplay or player API code changed because the source feature set is a WhatsApp command folder and no RPG website gap was established by that comparison.
+- Website package version is `2.13.0` for stage documentation/verification alignment. This is not a claim of a new game feature.
+- `npm run verify:stage33` checks that the Stage 33 decision record exists and that the existing authenticated player route tree remains present. It is a static repository contract check, not live deployment proof.
+- Work record: [`docs/STAGE-33.md`](docs/STAGE-33.md), [`docs/STAGE-33-250-SUBCATEGORIES.md`](docs/STAGE-33-250-SUBCATEGORIES.md), [`MEMORY.md`](MEMORY.md).
+
+
+## Stage 34 — World streaming telemetry (2026-10-29)
+
+- `WorldManager` accepts `renderRadius` (bounded 1–4 chunks) and `treeDensity` (0–24 procedural trees per chunk).
+- Emits `whiskay:world-telemetry` with center chunk, chunk count, estimated trees, resource marker count, chunk size and update timestamp.
+- Exports `getWorldStreamingStats()` and supports radius-aware `getWorldResourceMarkers()`.
+- This is a configurable procedural-world foundation, not a claim that photorealistic NPC/house/tree assets or new animations have been delivered.
+- Verify with `npm run verify:stage34`; full build and live mobile performance profiling are separate checks.
+
+
+## Stage 35 integration notes
+
+The companion remains compatible with the shared player progression contract. Bot-side command XP and chess leaderboard are stored separately from RPG combat/economy state. See `docs/STAGE-35.md` for integration boundaries and verification status.
+
+
+## Stage 36
+- Paired release documentation: `docs/STAGE-36.md`.
+- The bot's helper/event registry is server-side only; do not import WhatsApp-specific helpers into the browser bundle.
